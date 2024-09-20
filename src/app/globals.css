@@ -1,0 +1,21 @@
+/* default is for mobile devices */
+.card_container{
+    flex-direction: column;
+    min-height: 100vh;
+    justify-content: space-evenly;
+    
+    .cards{
+        display: flex;
+        margin: 1rem;
+        border: 1px solid;
+        height: 15rem;
+        width: 15rem;
+        box-shadow: 6px 9px 1px 0px;
+        border-radius: 1rem;
+        justify-content: center;
+        align-items: center;
+        text-decoration: none;
+        color: black
+    }
+}
+ 

@@ -1,5 +1,5 @@
 "use client";
-import Navbar from "./(components)/navbar/page";
+import Navbar from "./(components)/_navbar/page";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import LayoutContext from "./context/LayoutContext";
@@ -33,6 +33,7 @@ const RootLayout = ({ children }) => {
         </head>
         <body>
           <Navbar/>
+          <div className="mt-4"></div>
           {children}
           <script
             src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"

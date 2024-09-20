@@ -3,11 +3,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useContext } from "react";
 import LayoutContext from "../../context/LayoutContext";
+import "./styles.css";
 const NavBar = () => {
   const { router, user, setUser } = useContext(LayoutContext);
   const pathName = usePathname();
 
-  const navLinks = [{ name: "Home", href: "/" }];
+  const navLinks = [
+    { href: "/", text: "Home" },
+    { href: "/pages/videos", text: "Videos" },
+    { href: "/pages/quizzes", text: "Quizzes" },
+    { href: "/pages/notes", text: "Notes" },
+    { href: "/pages/assignments", text: "Assignments" },
+  ];
 
   const handleLogout = () => {
     console.log("logging out user");
@@ -16,9 +23,23 @@ const NavBar = () => {
     router.push("/login");
   };
 
+  const navbarStyle = {
+    top: 0,
+    left: 0,
+    background: "rgba(255, 255, 255, 0.25)",
+    boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
+    backdropFilter: "blur(4px)",
+    WebkitBackdropFilter: "blur(4px)",
+    borderRadius: "10px 10px",
+    border: "1px solid rgba(255, 255, 255, 0.18)",
+  };
+
   return (
     <>
-      <nav className="navbar navbar-expand-lg bg-body-tertiary">
+      <nav
+        className="navbar navbar-expand-lg bg-body-tertiary position-sticky"
+        style={navbarStyle}
+      >
         <div className="container-fluid">
           <Link className="navbar-brand" href="/">
             {user?.username}
@@ -44,7 +65,7 @@ const NavBar = () => {
                       href={link.href}
                       className={`nav-link ${isActive && "active"}`}
                     >
-                      {link.name}
+                      {link.text}
                     </Link>
                   </li>
                 );
@@ -72,4 +93,5 @@ const NavBar = () => {
     </>
   );
 };
+
 export default NavBar;
