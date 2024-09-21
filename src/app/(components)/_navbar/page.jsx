@@ -11,10 +11,10 @@ const NavBar = () => {
   const pathName = usePathname();
   const navLinks = [
     { href: "/", text: "Home" },
-    { href: "/pages/videos", text: "Videos" },
-    { href: "/pages/quizzes", text: "Quizzes" },
-    { href: "/pages/notes", text: "Notes" },
-    { href: "/pages/assignments", text: "Assignments" },
+    { href: "/videos", text: "Videos" },
+    { href: "/quizzes", text: "Quizzes" },
+    { href: "/notes", text: "Notes" },
+    { href: "/assignments", text: "Assignments" },
   ];
 
   const navbarStyle = {
@@ -41,7 +41,7 @@ const NavBar = () => {
            width={50}
            alt="Picture of the author"
           ></Image>
-            {"VidyaGram-"+  user?.username}
+          {`VidyaGram${user && '-'+user?.username || ''}`}
           </Link>
           {user && (
             <>

@@ -8,10 +8,10 @@ export default function Home() {
   props.checkuser(); //check if the user is logged in or not
 
   const cards = [
-    { href: "/pages/videos", text: "Videos" },
-    { href: "/pages/quizzes", text: "Quizzes" },
-    { href: "/pages/notes", text: "Notes" },
-    { href: "/pages/assignments", text: "Assignments" },
+    { href: "/videos", text: "Videos" },
+    { href: "/quizzes", text: "Quizzes" },
+    { href: "/notes", text: "Notes" },
+    { href: "/assignments", text: "Assignments" },
   ];
   return (
     <div className="hero_page">

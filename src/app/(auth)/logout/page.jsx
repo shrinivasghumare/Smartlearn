@@ -9,7 +9,7 @@ export default function Logout() {
       setUser(null);
     }, [])
     
-    localStorage.removeItem("user");
+    localStorage.clear();
     router.push("/login");
 
     return <>Logging out...</>;
