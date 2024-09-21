@@ -27,7 +27,7 @@
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx"
-, "src/app/_lib/withAuth.js"  ],
+, "src/app/_lib/withAuth.js", "src/app/_auth/logout/page.jsx", "src/app/(auth)/login/page.jsx"  ],
   "exclude": [
     "node_modules"
   ]

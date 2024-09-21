@@ -16,12 +16,6 @@ const NavBar = () => {
     { href: "/pages/assignments", text: "Assignments" },
   ];
 
-  const handleLogout = () => {
-    console.log("logging out user");
-    setUser(null);
-    localStorage.removeItem("user");
-    router.push("/login");
-  };
 
   const navbarStyle = {
     top: 0,
@@ -82,7 +76,7 @@ const NavBar = () => {
             {user && (
               <button
                 className="btn btn-outline-primary"
-                onClick={() => handleLogout()}
+                onClick={() => router.push('/logout')}
               >
                 Logout
               </button>

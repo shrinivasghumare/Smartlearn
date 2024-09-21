@@ -1,0 +1,23 @@
+.login_page {
+  min-height: 80vh;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  .login {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    flex-direction: column;
+    margin: 1rem;
+    padding: 1rem;
+    border: 1px solid;
+    box-shadow: 6px 9px 1px 0px;
+    border-radius: 1rem;
+
+    input{
+        margin: .5rem;
+    }
+  }
+  
+}
