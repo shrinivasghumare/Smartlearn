@@ -1,6 +1,6 @@
 .login_page {
   min-height: 80vh;
-
+  font-family: monospace;
   display: flex;
   justify-content: center;
   align-items: center;
