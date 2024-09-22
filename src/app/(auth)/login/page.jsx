@@ -3,6 +3,7 @@ import { useState } from "react";
 import { supabase } from "../../_lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import "./styles.css";
+import "../../globals.css";
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");

@@ -1,0 +1,27 @@
+.videoLayout {
+  font-family: monospace;
+  .videoNav {
+    position: fixed;
+    left: 0;
+    background: whitesmoke;
+    border-radius: 1rem;
+    height: 100vh;
+    z-index: 1;
+  }
+  .showNavBtn {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+  }
+  .nav {
+    --bs-nav-link-color: black;
+    display: block;
+  }
+
+}
+
+
+@media only screen and (min-width: 768px) {
+  /* For desktop: */
+  
+}

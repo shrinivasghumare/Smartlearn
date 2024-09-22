@@ -36,12 +36,8 @@ const NavBar = () => {
       >
         <div className="container-fluid">
           <Link className="navbar-brand d-flex align-items-center" href="/">
-          <Image
-           src={logo}
-           width={50}
-           alt="Picture of the author"
-          ></Image>
-          {`VidyaGram${user && '-'+user?.username || ''}`}
+            <Image src={logo} width={50} alt="Picture of the author"></Image>
+            {`VidyaGram${(user && "-" + user?.username) || ""}`}
           </Link>
           {user && (
             <>
@@ -62,12 +58,16 @@ const NavBar = () => {
               >
                 <ul className="navbar-nav me-auto mb-2 mb-lg-0">
                   {navLinks.map((link) => {
-                    const isActive = (pathName == link.href);
+                    const isActive =
+                      link.href === "/"
+                        ? pathName === "/"
+                        : pathName.startsWith(link.href) && link.href !== "/";
+
                     return (
                       <li className="nav-item" key={link.href}>
                         <Link
                           href={link.href}
-                          className={`nav-link ${isActive && "active"}`}
+                          className={`nav-link ${isActive ? "active" : ""}`}
                         >
                           {link.text}
                         </Link>

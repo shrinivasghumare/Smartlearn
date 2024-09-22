@@ -13,9 +13,10 @@ export default function Home() {
     { href: "/notes", text: "Notes" },
     { href: "/assignments", text: "Assignments" },
   ];
+
   return (
     <div className="hero_page">
-      <div className="card_container d-flex align-items-center justify-space-evenly">
+      <div className="card_container d-flex align-items-center justify-space-evenly container">
         {cards.map((card, idx) => {
           return (
             <Link className="cards" href={card.href} key={idx}>

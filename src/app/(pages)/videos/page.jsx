@@ -76,9 +76,9 @@ const Videos = () => {
   return (
     <div className="videos_page container mt-5">
       <h3 className="mb-4">Find course by</h3>
-      <div className="row">
+      <div className="row d-flex justify-content-center align-items-center">
         {/* Year Selection */}
-        <div className="col-md-3">
+        <div className="col-md-3 mt-1">
           <select
             className="form-select"
             value={year}
@@ -101,7 +101,7 @@ const Videos = () => {
         </div>
 
         {/* Branch Selection */}
-        <div className="col-md-3">
+        <div className="col-md-3 mt-1">
           <select
             className="form-select"
             value={branch}
@@ -123,7 +123,7 @@ const Videos = () => {
         </div>
 
         {/* Subject Selection */}
-        <div className="col-md-3">
+        <div className="col-md-3 mt-1">
           <select
             className="form-select"
             value={subject}
@@ -145,7 +145,7 @@ const Videos = () => {
         </div>
 
         {/* Search Button */}
-        <div className="col-md-2">
+        <div className="col-md-2 mt-1">
           <button
             className="btn btn-primary w-100"
             onClick={handleSearch}
@@ -170,7 +170,7 @@ const Videos = () => {
                     </p> */}
                     {/* <p>This is a video player</p> */}
                     <Link
-                      href={`/videos/${video.toString().replaceAll(" ", "_")}`}
+                      href={`/videos/${video.replaceAll(" ", "_")}`}
                     >
                       <button className="btn btn-outline-primary">
                         Learn..
