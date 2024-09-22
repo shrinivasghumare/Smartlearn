@@ -1,5 +1,6 @@
 .videoLayout {
   font-family: monospace;
+
   .videoNav {
     position: fixed;
     left: 0;
@@ -17,11 +18,14 @@
     --bs-nav-link-color: black;
     display: block;
   }
-
+  .video {
+    transition: all 0.2s ease;
+  }
+  .video:hover {
+    scale: 1.02;
+  }
 }
-
 
 @media only screen and (min-width: 768px) {
   /* For desktop: */
-  
 }

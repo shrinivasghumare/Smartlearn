@@ -10,10 +10,10 @@ export default function Module({ params }) {
 
   const [moduleLinks, setModuleLinks] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const [subject, setSubject] = useState();
   useEffect(() => {
+    setSubject(localStorage.getItem("subject") || null);
     const moduleName = params.module_name.replaceAll("_", " ");
-
     // Check if the links are already in localStorage
     const cachedModuleLinks = localStorage.getItem(
       `module_links_${params.module_name}`
@@ -57,8 +57,8 @@ export default function Module({ params }) {
 
   return (
     <div className="container">
-      <h1>
-        These are videos for {params.module_name.replaceAll("_", " ")} module!
+      <h1 className="text-center">
+        {subject + "-" + params.module_name.replaceAll("_", " ")}
       </h1>
       {loading ? (
         <div className="container text-center my-5">
