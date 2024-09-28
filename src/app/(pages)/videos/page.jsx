@@ -5,6 +5,7 @@ import LayoutContext from "../../context/LayoutContext";
 import Link from "next/link";
 import "./styles.css";
 import "../../globals.css";
+import { stringify } from "querystring";
 
 const Videos = () => {
   const LayoutProps = useContext(LayoutContext);
@@ -14,7 +15,7 @@ const Videos = () => {
   const [year, setYear] = useState("");
   const [subject, setSubject] = useState("");
   const [subjects, setSubjects] = useState([]); // fetched subjects
-  const [videos, setVideos] = useState([]);
+  const [modules, setModules] = useState([]);
   const [loadingSubjects, setLoadingSubjects] = useState(false); // subject loading state
   const [loadingVideos, setLoadingVideos] = useState(false); // video loading state
 
@@ -26,7 +27,7 @@ const Videos = () => {
     setYear(localStorage.getItem("year") || "");
     setSubject(localStorage.getItem("subject") || "");
     setSubjects(JSON.parse(localStorage.getItem("subjects")) || []);
-    setVideos(JSON.parse(localStorage.getItem("videos")) || []);
+    setModules(JSON.parse(localStorage.getItem("modules")) || []);
   }, []);
 
   // Fetch subjects from Supabase
@@ -43,8 +44,8 @@ const Videos = () => {
     if (error) {
       console.error("Error fetching subjects:", error);
     } else {
-      localStorage.setItem("subjects", JSON.stringify(data[0].subject));
-      setSubjects(data[0].subject);
+      localStorage.setItem("subjects", JSON.stringify(data[0]?.subject || []));
+      setSubjects(data[0]?.subject || []);
     }
   };
 
@@ -62,14 +63,17 @@ const Videos = () => {
       console.error("Error fetching videos:", error);
     } else {
       console.log(data[0]);
-      localStorage.setItem("videos", JSON.stringify(data[0]?.modules));
-      setVideos(data[0]?.modules);
+      localStorage.setItem("modules", JSON.stringify(data[0]?.modules));
+      setModules(data[0]?.modules);
     }
   };
 
   useEffect(() => {
+    handleSearch();
+  }, [subject]);
+  useEffect(() => {
     if (branch && year) {
-      fetchSubjects(); // fetch subjects when branch or year is selected
+      fetchSubjects();
     }
   }, [branch, year]);
 
@@ -158,20 +162,14 @@ const Videos = () => {
 
       {/* Display Videos */}
       <div className="mt-5">
-        {videos.length > 0 ? (
+        {modules?.length > 0 ? (
           <div className="row">
-            {videos.map((video, index) => (
+            {modules.map((video, index) => (
               <div key={index} className="col-md-4 mb-3">
                 <div className="card">
                   <div className="card-body">
                     <h5 className="card-title">{index + 1 + ". " + video}</h5>
-                    {/* <p className="card-text">
-                      {subject} ({year})
-                    </p> */}
-                    {/* <p>This is a video player</p> */}
-                    <Link
-                      href={`/videos/${video.replaceAll(" ", "_")}`}
-                    >
+                    <Link href={`/videos/${video.replaceAll(" ", "_")}`}>
                       <button className="btn btn-outline-primary">
                         Learn..
                       </button>
@@ -184,9 +182,69 @@ const Videos = () => {
         ) : (
           !loadingVideos && <p>No videos available for the selected course</p>
         )}
+        <InsertModuleBox
+          modules={modules}
+          subject={subject}
+          setModules={setModules}
+        />
       </div>
     </div>
   );
 };
 
 export default Videos;
+
+function InsertModuleBox({ modules, subject, setModules }) {
+  const [newModuleName, setNewModuleName] = useState("");
+
+  const handleInsertModule = async () => {
+    if (!newModuleName) {
+      alert("Please enter a module name");
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("subjects")
+      .upsert({
+        subject_name: subject, // subject name to upsert
+        modules: [...(modules || []), newModuleName], // insert or update the modules
+      }) // ensure uniqueness on subject_name
+      .select();
+
+    if (error) {
+      console.error("Error updating module: ", error);
+    } else {
+      console.log("Module added/updated successfully: ", data);
+      setModules(data[0].modules);
+      localStorage.setItem("modules", JSON.stringify(data[0].modules)); // use data[0].modules
+      setNewModuleName("");
+    }
+  };
+
+  return (
+    <div className="col-md-4 mb-3">
+      <div className="card">
+        <div className="card-body">
+          <h5 className="card-title">Add a Module!</h5>
+          <form onSubmit={(e) => e.preventDefault()}>
+            <input
+              type="text"
+              className="m-1"
+              onChange={(e) => setNewModuleName(e.target.value)}
+              value={newModuleName}
+              required
+            />
+            <button
+              className="btn btn-outline-primary m-1"
+              onClick={handleInsertModule}
+              type="submit"
+              disabled={!newModuleName}
+            >
+              Add
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}

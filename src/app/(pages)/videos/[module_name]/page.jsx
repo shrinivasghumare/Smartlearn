@@ -58,7 +58,7 @@ export default function Module({ params }) {
   return (
     <div className="container">
       <h1 className="text-center">
-        {subject + "-" + params.module_name.replaceAll("_", " ")}
+        {"("+subject+")" + "-" + params.module_name.replaceAll("_", " ")}
       </h1>
       {loading ? (
         <div className="container text-center my-5">
