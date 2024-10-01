@@ -11,7 +11,7 @@ export default function videoLayout({ children, params }) {
   const [modules, setModules] = useState();
   LayoutProps.checkuser();
   useEffect(() => {
-    setModules(JSON.parse(localStorage.getItem("videos")) || null);
+    setModules(JSON.parse(localStorage.getItem("modules")) || null);
   }, []);
 
   const pathName = usePathname();

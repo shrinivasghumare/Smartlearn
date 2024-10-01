@@ -5,7 +5,6 @@ import LayoutContext from "../../context/LayoutContext";
 import Link from "next/link";
 import "./styles.css";
 import "../../globals.css";
-import { stringify } from "querystring";
 
 const Videos = () => {
   const LayoutProps = useContext(LayoutContext);
@@ -17,8 +16,10 @@ const Videos = () => {
   const [subjects, setSubjects] = useState([]); // fetched subjects
   const [modules, setModules] = useState([]);
   const [loadingSubjects, setLoadingSubjects] = useState(false); // subject loading state
-  const [loadingVideos, setLoadingVideos] = useState(false); // video loading state
-
+  const [loadingModules, setLoadingModules] = useState(false); // video loading state
+  const [moduleMessage, setModuleMessage] = useState(
+    "No videos available for the selected course"
+  );
   const branches = ["CE", "AIDS", "ECS", "MECH"];
   const years = ["FE", "SE", "TE", "BE"];
 
@@ -27,7 +28,6 @@ const Videos = () => {
     setYear(localStorage.getItem("year") || "");
     setSubject(localStorage.getItem("subject") || "");
     setSubjects(JSON.parse(localStorage.getItem("subjects")) || []);
-    setModules(JSON.parse(localStorage.getItem("modules")) || []);
   }, []);
 
   // Fetch subjects from Supabase
@@ -49,28 +49,30 @@ const Videos = () => {
     }
   };
 
-  // Fetch videos from Supabase
+  // Fetch Modules from Supabase
   const handleSearch = async () => {
-    setLoadingVideos(true);
+    setLoadingModules(true);
     const { data, error } = await supabase
       .from("subjects")
       .select("modules")
-      .eq("subject_name", subject); // assuming subject ID is stored
+      .eq("subject_name", subject);
 
-    setLoadingVideos(false);
+    setLoadingModules(false);
+    setModuleMessage("No videos available for the selected course");
 
     if (error) {
       console.error("Error fetching videos:", error);
     } else {
-      console.log(data[0]);
       localStorage.setItem("modules", JSON.stringify(data[0]?.modules));
       setModules(data[0]?.modules);
     }
   };
 
   useEffect(() => {
-    handleSearch();
+    setModules([]);
+    setModuleMessage("Click on the search button!");
   }, [subject]);
+
   useEffect(() => {
     if (branch && year) {
       fetchSubjects();
@@ -155,7 +157,7 @@ const Videos = () => {
             onClick={handleSearch}
             disabled={!subject}
           >
-            {loadingVideos ? "Loading..." : "Search"}
+            {loadingModules ? "Loading..." : "Search"}
           </button>
         </div>
       </div>
@@ -180,13 +182,15 @@ const Videos = () => {
             ))}
           </div>
         ) : (
-          !loadingVideos && <p>No videos available for the selected course</p>
+          !loadingModules && <p>{moduleMessage}</p>
         )}
-        <InsertModuleBox
-          modules={modules}
-          subject={subject}
-          setModules={setModules}
-        />
+        {moduleMessage != "Click on the search button!" && (
+          <InsertModuleBox
+            modules={modules}
+            subject={subject}
+            setModules={setModules}
+          />
+        )}
       </div>
     </div>
   );
@@ -197,27 +201,39 @@ export default Videos;
 function InsertModuleBox({ modules, subject, setModules }) {
   const [newModuleName, setNewModuleName] = useState("");
 
+  //inserting a new module to {subject}
   const handleInsertModule = async () => {
     if (!newModuleName) {
       alert("Please enter a module name");
       return;
     }
 
-    const { data, error } = await supabase
-      .from("subjects")
-      .upsert({
-        subject_name: subject, // subject name to upsert
-        modules: [...(modules || []), newModuleName], // insert or update the modules
-      }) // ensure uniqueness on subject_name
-      .select();
+    try {
+      let { data, error } = await supabase
+        .from("subjects")
+        .update({ modules: [...(modules || []), newModuleName] })
+        .eq("subject_name", subject)
+        .select();
 
-    if (error) {
-      console.error("Error updating module: ", error);
-    } else {
-      console.log("Module added/updated successfully: ", data);
-      setModules(data[0].modules);
-      localStorage.setItem("modules", JSON.stringify(data[0].modules)); // use data[0].modules
+      if (error) throw error;
+
+      // If no matching subject is found, create a new entry
+      if (data.length === 0) {
+        ({ data, error } = await supabase
+          .from("subjects")
+          .insert([{ subject_name: subject, modules: [newModuleName] }])
+          .select());
+
+        if (error) throw error;
+      }
+
+      // Update state and local storage with the new module list
+      const updatedModules = data[0]?.modules;
+      setModules(updatedModules);
+      localStorage.setItem("modules", JSON.stringify(updatedModules));
       setNewModuleName("");
+    } catch (err) {
+      console.error("Error updating module: ", err);
     }
   };
 
