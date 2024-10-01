@@ -162,7 +162,7 @@ const Videos = () => {
         </div>
       </div>
 
-      {/* Display Videos */}
+      {/* Display Modules */}
       <div className="mt-5">
         {modules?.length > 0 ? (
           <div className="row">
@@ -203,7 +203,7 @@ function InsertModuleBox({ modules, subject, setModules }) {
 
   //inserting a new module to {subject}
   const handleInsertModule = async () => {
-    if (!newModuleName) {
+    if (!newModuleName.trim()) {
       alert("Please enter a module name");
       return;
     }
@@ -211,7 +211,7 @@ function InsertModuleBox({ modules, subject, setModules }) {
     try {
       let { data, error } = await supabase
         .from("subjects")
-        .update({ modules: [...(modules || []), newModuleName] })
+        .update({ modules: [...(modules || []), newModuleName.trim()] })
         .eq("subject_name", subject)
         .select();
 
@@ -221,7 +221,7 @@ function InsertModuleBox({ modules, subject, setModules }) {
       if (data.length === 0) {
         ({ data, error } = await supabase
           .from("subjects")
-          .insert([{ subject_name: subject, modules: [newModuleName] }])
+          .insert([{ subject_name: subject, modules: [newModuleName.trim()] }])
           .select());
 
         if (error) throw error;
