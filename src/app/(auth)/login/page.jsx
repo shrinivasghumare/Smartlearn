@@ -48,7 +48,7 @@ const Login = () => {
         />
         <button
           onClick={handleLogin}
-          className="btn btn-primary w-100 m-2"
+          className="btn btn-dark w-100 m-2"
           type="submit"
           disabled={!(username && password)}
         >

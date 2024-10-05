@@ -76,7 +76,7 @@ const NavBar = () => {
                   })}
                 </ul>
                 <button
-                  className="btn btn-outline-primary"
+                  className="btn btn-outline-dark"
                   onClick={() => router.push("/logout")}
                 >
                   Logout

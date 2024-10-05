@@ -3,21 +3,24 @@ import Navbar from "./(components)/_navbar/page";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import LayoutContext from "./context/LayoutContext";
+import Script from "next/script";
 const RootLayout = ({ children }) => {
   const [user, setUser] = useState();
-
   // function used to authenticate the user before going to any other page!
   const router = useRouter();
   const checkuser = () => {
     useEffect(() => {
       const userDetails = JSON.parse(localStorage.getItem("user"));
-      if (!userDetails) {
-        router.push("/login");
-      } else setUser(userDetails);
+      !userDetails ? router.push("/login") : setUser(userDetails);
     }, []);
   };
 
-  const Layoutprops = { user, setUser, checkuser,router };
+  const Layoutprops = {
+    user,
+    setUser,
+    checkuser,
+    router,
+  };
 
   return (
     <LayoutContext.Provider value={Layoutprops}>
@@ -32,13 +35,14 @@ const RootLayout = ({ children }) => {
           <title>Vidyagram</title>
         </head>
         <body>
-          <Navbar/>
+          <Navbar />
           <div className="mt-4"></div>
           {children}
-          <script
+          <Script
             src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
             crossOrigin="anonymous"
+            strategy="lazyOnload"
           />
         </body>
       </html>

@@ -153,7 +153,7 @@ const Videos = () => {
         {/* Search Button */}
         <div className="col-md-2 mt-1">
           <button
-            className="btn btn-primary w-100"
+            className="btn btn-dark w-100"
             onClick={handleSearch}
             disabled={!subject}
           >
@@ -172,7 +172,7 @@ const Videos = () => {
                   <div className="card-body">
                     <h5 className="card-title">{index + 1 + ". " + video}</h5>
                     <Link href={`/videos/${video.replaceAll(" ", "_")}`}>
-                      <button className="btn btn-outline-primary">
+                      <button className="btn btn-outline-dark">
                         Learn..
                       </button>
                     </Link>
@@ -251,10 +251,10 @@ function InsertModuleBox({ modules, subject, setModules }) {
               required
             />
             <button
-              className="btn btn-outline-primary m-1"
+              className="btn btn-outline-dark m-1"
               onClick={handleInsertModule}
               type="submit"
-              disabled={!newModuleName}
+              disabled={!newModuleName.trim()}
             >
               Add
             </button>

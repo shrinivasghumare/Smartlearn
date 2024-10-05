@@ -245,7 +245,7 @@ function AddNewVideo({ newLink, setNewLink, handleAddLink }) {
         }}
       />
       <button
-        className="btn btn-primary w-100 mt-3"
+        className="btn btn-dark w-100 mt-3"
         onClick={handleAddLink}
         type="submit"
         disabled={!newLink.trim()}
