@@ -4,12 +4,12 @@ Welcome to **Vidyagram**! This project is built using **Next.js** with support f
 
 ## Table of Contents
 
-- [Installation](#installation)
-- [Project Structure](#project-structure)
-- [Features](#features)
-- [Component Breakdown](#component-breakdown)
-- [Usage](#usage)
-- [Contributing](#contributing)
+- [Installation](#installation-%EF%B8%8F)
+- [Project Structure](#project-structure-%EF%B8%8F)
+- [Features](#features-)
+- [Component Breakdown](#component-breakdown-)
+- [Usage](#usage-)
+- [Contributing](#contributing-)
 
 ---
 
