@@ -5,7 +5,6 @@ import "./globals.css";
 import Link from "next/link";
 export default function Home() {
   const props = useContext(LayoutContext);
-  props.checkuser(); //check if the user is logged in or not
   const cards = [
     { href: "/videos", text: "Videos" },
     { href: "/quizzes", text: "Quizzes" },

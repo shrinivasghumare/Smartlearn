@@ -1,12 +1,9 @@
 "use client";
-import LayoutContext from "../../../context/LayoutContext";
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "../../../_lib/supabaseClient";
 import "../../../globals.css";
 
 export default function Module({ params }) {
-  const LayoutProps = useContext(LayoutContext);
-  LayoutProps.checkuser();
 
   const [moduleLinks, setModuleLinks] = useState([]);
   const [loading, setLoading] = useState(true);

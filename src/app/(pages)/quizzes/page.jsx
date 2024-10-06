@@ -162,7 +162,7 @@ export default function Home() {
       setQuestions(questionsWithShuffledOptions);
     } catch (error) {
       console.error("Error fetching questions:", error);
-      alert("There was an error generating the quiz. Please try again.");
+      alert("There was an error generating the quiz. Please try again in some minutes!.");
     } finally {
       setUserAnswers({});
       setLoading(false);

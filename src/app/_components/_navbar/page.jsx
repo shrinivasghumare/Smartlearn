@@ -35,8 +35,11 @@ const NavBar = () => {
         style={navbarStyle}
       >
         <div className="container-fluid">
-          <Link className="navbar-brand d-flex align-items-center" href="/">
-            <Image src={logo} width={50} alt="Picture of the author"></Image>
+          <Link
+            className="navbar-brand d-flex align-items-center"
+            href={user ? "/" : "/login"}
+          >
+            <Image src={logo} width={50} alt="vidyagram"/>
             {`VidyaGram${(user && "-" + user?.username) || ""}`}
           </Link>
           {user && (
@@ -50,7 +53,7 @@ const NavBar = () => {
                 aria-expanded="false"
                 aria-label="Toggle navigation"
               >
-                <span className="navbar-toggler-icon"></span>
+                <span className="navbar-toggler-icon"/>
               </button>
               <div
                 className="collapse navbar-collapse"

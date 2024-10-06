@@ -21,14 +21,14 @@ export function Results({
             Q{index + 1}: {question?.question}
           </h5>
           <div className="text-muted mb-2">
-            <span className="badge rounded-pill text-bg-info text-wrap">
+            <span className="badge rounded-pill text-bg-info text-truncate img-fluid">
               {question?.category}
             </span>{" "}
-            <span className="badge rounded-pill text-bg-primary text-wrap">
+            <span className="badge rounded-pill text-bg-primary text-truncate img-fluid">
               {question?.topic}
             </span>{" "}
             {question?.fromNotes && (
-              <span className="badge rounded-pill text-bg-secondary text-wrap">
+              <span className="badge rounded-pill text-bg-secondary text-truncate img-fluid">
                 Notes
               </span>
             )}{" "}
@@ -39,7 +39,7 @@ export function Results({
                   : question?.difficulty === "Medium"
                   ? "warning"
                   : "danger"
-              }  text-wrap`}
+              }  text-truncate img-fluid`}
             >
               {question?.difficulty}
             </span>
@@ -47,7 +47,7 @@ export function Results({
               <summary className="badge rounded-pill text-bg-dark">
                 Explanation
               </summary>
-              <p>{question?.explanation}</p>
+              <p className="bg-body-secondary mt-3 p-3 rounded">{question?.explanation}</p>
             </details>
           </div>
           <ul className="list-unstyled">

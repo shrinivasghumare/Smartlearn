@@ -1,15 +1,11 @@
 "use client";
-import { useState, useEffect, useContext } from "react";
-import { supabase } from "../../_lib/supabaseClient"; // import supabase client
-import LayoutContext from "../../context/LayoutContext";
+import { useState, useEffect, useCallback } from "react";
+import { supabase } from "../../_lib/supabaseClient";
 import Link from "next/link";
 import "./styles.css";
 import "../../globals.css";
 
 const Videos = () => {
-  const LayoutProps = useContext(LayoutContext);
-  LayoutProps.checkuser();
-
   const [branch, setBranch] = useState("");
   const [year, setYear] = useState("");
   const [subject, setSubject] = useState("");
@@ -31,7 +27,7 @@ const Videos = () => {
   }, []);
 
   // Fetch subjects from Supabase
-  const fetchSubjects = async () => {
+  const fetchSubjects = useCallback(async () => {
     setLoadingSubjects(true);
     const { data, error } = await supabase
       .from("branches")
@@ -44,10 +40,11 @@ const Videos = () => {
     if (error) {
       console.error("Error fetching subjects:", error);
     } else {
-      localStorage.setItem("subjects", JSON.stringify(data[0]?.subject || []));
-      setSubjects(data[0]?.subject || []);
+      const subjectsList = data[0]?.subject || [];
+      localStorage.setItem("subjects", JSON.stringify(subjectsList));
+      setSubjects(subjectsList);
     }
-  };
+  }, [branch, year]);
 
   // Fetch Modules from Supabase
   const handleSearch = async () => {
@@ -77,7 +74,7 @@ const Videos = () => {
     if (branch && year) {
       fetchSubjects();
     }
-  }, [branch, year]);
+  }, [branch, year, fetchSubjects]);
 
   return (
     <div className="videos_page container mt-5">
@@ -172,9 +169,7 @@ const Videos = () => {
                   <div className="card-body">
                     <h5 className="card-title">{index + 1 + ". " + video}</h5>
                     <Link href={`/videos/${video.replaceAll(" ", "_")}`}>
-                      <button className="btn btn-outline-dark">
-                        Learn..
-                      </button>
+                      <button className="btn btn-outline-dark">Learn..</button>
                     </Link>
                   </div>
                 </div>

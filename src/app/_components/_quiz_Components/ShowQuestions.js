@@ -5,14 +5,14 @@ export function ShowQuestions({ index, handleAnswerChange, question }) {
         Q{index + 1}: {question?.question}
       </h5>
       <p className="text-muted">
-        <span className="badge rounded-pill text-bg-info text-wrap">
+        <span className="badge rounded-pill text-bg-info text-truncate img-fluid">
           {question?.category}
         </span>{" "}
-        <span className="badge rounded-pill text-bg-primary text-wrap">
+        <span className="badge rounded-pill text-bg-primary text-truncate img-fluid">
           {question?.topic}
         </span>{" "}
         {question?.fromNotes && (
-          <span className="badge rounded-pill text-bg-secondary text-wrap">
+          <span className="badge rounded-pill text-bg-secondary text-truncate img-fluid">
             Notes
           </span>
         )}{" "}
@@ -23,7 +23,7 @@ export function ShowQuestions({ index, handleAnswerChange, question }) {
               : question?.difficulty === "Medium"
               ? "warning"
               : "danger"
-          }  text-wrap`}
+          } text-truncate img-fluid`}
         >
           {question?.difficulty}
         </span>

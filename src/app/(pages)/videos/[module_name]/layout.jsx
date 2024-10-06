@@ -1,15 +1,12 @@
 "use client";
-import LayoutContext from "../../../context/LayoutContext";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import "./styles.css";
 import "../../../globals.css";
 import Link from "next/link";
-export default function videoLayout({ children, params }) {
-  const LayoutProps = useContext(LayoutContext);
+export default function VideoLayout({ children }) {
   const [navVisible, setNavVisible] = useState(false);
   const [modules, setModules] = useState();
-  LayoutProps.checkuser();
   useEffect(() => {
     setModules(JSON.parse(localStorage.getItem("modules")) || null);
   }, []);

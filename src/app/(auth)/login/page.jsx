@@ -1,13 +1,13 @@
 "use client";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { supabase } from "../../_lib/supabaseClient";
-import { useRouter } from "next/navigation";
+import LayoutContext from "../../context/LayoutContext";
 import "./styles.css";
 import "../../globals.css";
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const router = useRouter();
+  const props = useContext(LayoutContext);
 
   const handleLogin = async () => {
     console.log(username, password);
@@ -20,7 +20,8 @@ const Login = () => {
     console.log(data, error);
     if (data && data.length > 0) {
       localStorage.setItem("user", JSON.stringify(data[0]));
-      router.push("/");
+      props.setUser(data[0]);
+      props.router.push("/");
     } else {
       alert("Invalid username or password");
     }
