@@ -1,5 +1,5 @@
 "use client";
-import Navbar from "./(components)/_navbar/page";
+import Navbar from "./_components/_navbar/page";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import LayoutContext from "./context/LayoutContext";
