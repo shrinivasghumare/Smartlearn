@@ -1,9 +1,11 @@
 "use client";
+import { useState, useEffect, useMemo, useCallback, useContext } from "react";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { useState, useEffect, useMemo, useCallback } from "react";
 import curriculumData from "./_data/curriculum.json";
 import { ShowQuestions } from "../../_components/_quiz_Components/ShowQuestions";
 import { Results } from "../../_components/_quiz_Components/Results";
+import { supabase } from "../../_lib/supabaseClient";
+import LayoutContext from "../../context/LayoutContext";
 
 // Function to shuffle an array
 const shuffleArray = (array) => {
@@ -28,13 +30,47 @@ export default function Home() {
   const [userAnswers, setUserAnswers] = useState({});
   const [isAllChecked, setIsAllChecked] = useState(false);
   const [professorNotes, setProfessorNotes] = useState("");
+  const [quizStats, setQuizStats] = useState(null);
+  const { user } = useContext(LayoutContext);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+
+  // Fetch quiz history from Supabase when the page loads
+  const fetchQuizStats = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from("quiz_data")
+        .select("*")
+        .eq("roll_no", user.roll_no);
+
+      if (error) throw error;
+
+      if (data.length > 0) {
+        const totalQuizzes = data.length;
+        const totalScore = data.reduce((acc, quiz) => acc + quiz.score, 0);
+        const avgScore = (totalScore / totalQuizzes).toFixed(2);
+        const highestScore = Math.max(...data.map((quiz) => quiz.score));
+        const lowestScore = Math.min(...data.map((quiz) => quiz.score));
+
+        setQuizStats({
+          totalQuizzes,
+          avgScore,
+          highestScore,
+          lowestScore,
+        });
+      } else {
+        setQuizStats(null);
+      }
+    } catch (error) {
+      console.error("Error fetching quiz stats:", error);
+    }
+  }, [user.roll_no]);
 
   // Load semesters from the curriculum JSON on first render
   useEffect(() => {
     const semesterList = Object.keys(curriculumData.CS);
     setSemesters(semesterList);
-  }, []);
-
+    if (user) fetchQuizStats();
+  }, [user, fetchQuizStats]);
   // Handle the semester selection and load its subjects
   const handleSemesterChange = (semester) => {
     setSelectedSemester(semester);
@@ -51,7 +87,6 @@ export default function Home() {
     setIsAllChecked(false); // Reset check/uncheck state
   };
 
-  // Handle the subject selection and load its modules
   const handleSubjectChange = (subject) => {
     setSelectedSubject(subject);
     const foundSubject = subjects.find((subj) => subj.name === subject);
@@ -59,14 +94,12 @@ export default function Home() {
     setSelectedModules([]); // Clear selected modules
     setIsAllChecked(false); // Reset "Check All" state
 
-    // Uncheck all checkboxes on subject change
     const checkboxes = document.querySelectorAll('input[type="checkbox"]');
     checkboxes.forEach((checkbox) => {
       checkbox.checked = false;
     });
   };
 
-  // Handle the module selection
   const handleModuleChange = (module) => {
     const isSelected = selectedModules.includes(module);
     if (isSelected) {
@@ -76,28 +109,27 @@ export default function Home() {
     }
   };
 
-  // Handle the "Check All/Uncheck All" functionality
   const toggleCheckAll = () => {
     if (isAllChecked) {
-      // Uncheck all
       setSelectedModules([]);
       const checkboxes = document.querySelectorAll('input[type="checkbox"]');
       checkboxes.forEach((checkbox) => {
         checkbox.checked = false;
       });
     } else {
-      // Check all
       setSelectedModules(modules);
       const checkboxes = document.querySelectorAll('input[type="checkbox"]');
       checkboxes.forEach((checkbox) => {
         checkbox.checked = true;
       });
     }
-    setIsAllChecked(!isAllChecked); // Toggle the state
+    setIsAllChecked(!isAllChecked);
   };
 
-  // Fetch questions based on the selected modules and topics
+  const NumberOfQuestions = 10;
   const getResult = useCallback(async () => {
+    setQuestions([]);
+    setCurrentQuestionIndex(0);
     if (!selectedModules.length) {
       alert("Please select at least one module.");
       return;
@@ -106,7 +138,6 @@ export default function Home() {
     const selectedTopics = selectedModules
       .flatMap((mod) => mod.topics)
       .join(", ");
-    const NumberOfQuestions = 10;
     const prompt = `
     Generate multiple-choice questions (MCQs) based on the following modules, notes, and topics. Each question should include one correct answer and three incorrect answers. The output should be formatted as JSON, containing the following fields:
     [
@@ -122,15 +153,12 @@ export default function Home() {
         "fromNotes": true | false
       }
     ]
-    Note: If the question is based on the professor's notes, set fromNotes to true. If the question does not relate to the notes or if the notes are irrelevant to the selected subjects or topics, set fromNotes to false.
-    Details:
-
     Modules: ${selectedModules.map((mod) => mod.name).join(", ")}
     Topics: ${selectedTopics}
     Notes: {${professorNotes ? professorNotes : "No notes provided"}}
     Number of questions required: ${NumberOfQuestions}
     `;
-    // console.log(prompt);
+
     try {
       setLoading(true);
       setShowResults(false);
@@ -163,7 +191,7 @@ export default function Home() {
       setQuestions(questionsWithShuffledOptions);
     } catch (error) {
       console.error("Error fetching questions:", error);
-      alert("There was an error generating the quiz. Please try again in some minutes!.");
+      alert("There was an error generating the quiz. Please try again later.");
     } finally {
       setUserAnswers({});
       setLoading(false);
@@ -184,137 +212,240 @@ export default function Home() {
     ).length;
   }, [userAnswers, questions]);
 
-  // Handle submission to show results
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (Object.keys(userAnswers).length !== questions.length) {
-      //alert user to answer all questions
       alert("Please answer all the questions.");
       return;
     }
+
     setShowResults(true);
+
+    // Insert the quiz data into Supabase
+    const { data, error } = await supabase
+      .from("quiz_data")
+      .insert([
+        {
+          modules: [...selectedModules],
+          professorNotes: professorNotes,
+          numberOfQuestions: NumberOfQuestions,
+          questions: [...questions],
+          userAnswers: userAnswers,
+          subject: selectedSubject,
+          semester: selectedSemester,
+          score: score,
+          roll_no: user.roll_no,
+        },
+      ])
+      .select();
+
+    if (error) {
+      console.error("Error inserting quiz data:", error);
+      return;
+    }
+
+    // Re-fetch the stats to reflect the updated data
+    fetchQuizStats();
   };
+
+  const handleNextQuestion = () => {
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    }
+  };
+
+  const handlePreviousQuestion = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
+    }
+  };
+
   return (
-    <div className="container my-5">
-      <h1 className="text-center mb-4">Quiz Questions</h1>
-
-      {/* Dropdown to select semester */}
-      <div className="mb-4">
-        <label className="form-label">Select Semester:</label>
-        <select
-          className="form-select"
-          value={selectedSemester}
-          onChange={(e) => handleSemesterChange(e.target.value)}
-        >
-          <option value="" disabled>
-            Select a semester
-          </option>
-          {semesters.map((semester, idx) => (
-            <option key={idx} value={semester}>
-              {semester}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Dropdown to select subject based on semester */}
-      {subjects.length > 0 && (
-        <div className="mb-4">
-          <label className="form-label">Select Subject:</label>
-          <select
-            className="form-select"
-            value={selectedSubject}
-            onChange={(e) => handleSubjectChange(e.target.value)}
-          >
-            <option value="" disabled>
-              Select a subject
-            </option>
-            {subjects.map((subject, idx) => (
-              <option key={idx} value={subject.name}>
-                {subject.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {/* Display modules based on selected subject */}
-      {modules.length > 0 && (
-        <div className="mb-4">
-          <label className="form-label">
-            Select Modules (You can select multiple):
-          </label>
-          <button
-            className="btn btn-sm btn-outline-dark mx-1"
-            onClick={toggleCheckAll}
-          >
-            {isAllChecked ? "Uncheck All" : "Check All"}
-          </button>
-          {modules.map((mod, idx) => (
-            <div key={idx} className="form-check">
-              <input
-                type="checkbox"
-                className="form-check-input"
-                id={`module-${idx}`}
-                onChange={() => handleModuleChange(mod)}
-              />
-              <label className="form-check-label" htmlFor={`module-${idx}`}>
-                <strong>{idx + 1}.</strong> {mod.name}
+    <div className="container-fluid">
+      <div className="row mt-4">
+        {/* Left Pane: Inputs */}
+        <div className="col-md-4 col-lg-3">
+          <div className="card shadow-sm p-4">
+            <h4 className="text-center">Configure Quiz</h4>
+            <hr />
+            <div>
+              <label htmlFor="semester" className="form-label">
+                Semester:
               </label>
-            </div>
-          ))}
-        </div>
-      )}
-      {/* Textarea for professor's notes */}
-      <div className="mb-4">
-        <label className="form-label">Add Notes:</label>
-        <textarea
-          className="form-control"
-          rows="3"
-          value={professorNotes}
-          onChange={(e) => setProfessorNotes(e.target.value)}
-          placeholder="Enter notes provided by your professor here..."
-        />
-        <small className="form-text text-muted">(Optional)</small>
-      </div>
-      <div className="text-center mb-4">
-        <button
-          className="btn btn-dark"
-          onClick={getResult}
-          disabled={loading || !selectedSubject || selectedModules.length === 0}
-        >
-          {loading ? "Loading..." : "Generate Questions"}
-        </button>
-      </div>
+              <select
+                className="form-select mb-3"
+                value={selectedSemester}
+                id="semester"
+                onChange={(e) => handleSemesterChange(e.target.value)}
+              >
+                <option value="" disabled>
+                  Select Semester
+                </option>
+                {semesters.map((semester) => (
+                  <option key={semester} value={semester}>
+                    {semester}
+                  </option>
+                ))}
+              </select>
 
-      {questions.length > 0 && !showResults && !loading && (
-        <div className="card p-4 shadow-sm">
-          {questions.map((question, index) => (
-            <ShowQuestions
-              question={question}
-              key={index}
-              index={index}
-              handleAnswerChange={handleAnswerChange}
-            />
-          ))}
-          <div className="text-center">
-            <button className="btn btn-dark" onClick={handleSubmit}>
-              Submit Answers
-            </button>
+              {selectedSemester && (
+                <>
+                  <label htmlFor="subject" className="form-label">
+                    Subject:
+                  </label>
+                  <select
+                    className="form-select mb-3"
+                    value={selectedSubject}
+                    onChange={(e) => handleSubjectChange(e.target.value)}
+                  >
+                    <option value="" disabled>
+                      Select Subject
+                    </option>
+                    {subjects.map((subject, index) => (
+                      <option key={index} value={subject.name}>
+                        {subject.name}
+                      </option>
+                    ))}
+                  </select>
+
+                  {selectedSubject && (
+                    <>
+                      <label className="form-label">Modules:</label>
+                      {modules.map((module, index) => (
+                        <div className="form-check" key={index}>
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            value={module.name}
+                            checked={selectedModules.includes(module)}
+                            onChange={() => handleModuleChange(module)}
+                            id={`module-${index}`}
+                          />
+                          <label
+                            className="form-check-label w-100 text-truncate"
+                            htmlFor={`module-${index}`}
+                          >
+                            {module.name}
+                          </label>
+                        </div>
+                      ))}
+                      <button
+                        className="mt-2 btn btn-sm btn-outline-dark w-100"
+                        onClick={toggleCheckAll}
+                      >
+                        {isAllChecked ? "Uncheck All" : "Check All"}
+                      </button>
+                      <button
+                        className="mt-2 btn btn-dark w-100"
+                        onClick={getResult}
+                        disabled={
+                          loading || !selectedSubject || !selectedModules.length
+                        }
+                      >
+                        {loading ? "Loading..." : "Generate Questions"}
+                      </button>
+                    </>
+                  )}
+                </>
+              )}
+
+              <label className="form-label mt-3" htmlFor="professorNotes">
+                Professor Notes:
+              </label>
+              <textarea
+                className="form-control mb-3"
+                id="professorNotes"
+                rows="3"
+                value={professorNotes}
+                onChange={(e) => setProfessorNotes(e.target.value)}
+                placeholder="Add your notes here (optional)"
+              />
+
+              {quizStats && <QuizStats quizStats={quizStats} />}
+            </div>
           </div>
         </div>
-      )}
 
-      {showResults && (
-        <Results
-          score={score}
-          questions={questions}
-          userAnswers={userAnswers}
-          selectedModules={selectedModules}
-          getResult={getResult}
-          loading={loading}
-          selectedSubject={selectedSubject}
-        />
-      )}
+        <div className="col-md-8 col-lg-9">
+          <div className="card shadow-sm p-4">
+            {!questions.length ? (
+              <button
+                className="btn btn-dark"
+                onClick={getResult}
+                disabled={
+                  loading || !selectedSubject || !selectedModules.length
+                }
+              >
+                {loading ? "Loading..." : "Generate Questions"}
+              </button>
+            ) : showResults ? (
+              <Results
+                score={score}
+                questions={questions}
+                userAnswers={userAnswers}
+              />
+            ) : (
+              <>
+                <ShowQuestions
+                  currentQuestionIndex={currentQuestionIndex}
+                  handleAnswerChange={handleAnswerChange}
+                  questions={questions}
+                  userAnswers={userAnswers}
+                />
+
+                <div className="d-flex justify-content-between">
+                  <button
+                    className="btn btn-dark"
+                    onClick={handlePreviousQuestion}
+                    disabled={currentQuestionIndex === 0}
+                  >
+                    Previous
+                  </button>
+                  {currentQuestionIndex === questions.length - 1 ? (
+                    <button className="btn btn-success" onClick={handleSubmit}>
+                      Submit
+                    </button>
+                  ) : (
+                    <button
+                      className="btn btn-dark"
+                      onClick={handleNextQuestion}
+                    >
+                      Next
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function QuizStats({ quizStats }) {
+  return (
+    <div className="card mt-3 p-3">
+      <h5>Quiz Stats</h5>
+      <table className="table table-bordered">
+        <tbody>
+          <tr>
+            <th>Total Quizzes</th>
+            <td>{quizStats.totalQuizzes}</td>
+          </tr>
+          <tr>
+            <th>Average Score</th>
+            <td>{quizStats.avgScore}</td>
+          </tr>
+          <tr>
+            <th>Highest Score</th>
+            <td>{quizStats.highestScore}</td>
+          </tr>
+          <tr>
+            <th>Lowest Score</th>
+            <td>{quizStats.lowestScore}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   );
 }

@@ -3,14 +3,10 @@ import WrongIcon from "./WrongIcon";
 export function Results({
   score,
   questions,
-  getResult,
-  loading,
   userAnswers,
-  selectedModules,
-  selectedSubject,
 }) {
   return (
-    <div className="card p-4 shadow-sm mt-4">
+    <div>
       <h2 className="text-center text-bg-primary rounded">
         Your Score: {score} out of {questions?.length}
       </h2>
@@ -79,16 +75,6 @@ export function Results({
           <hr />
         </div>
       ))}
-      <h2 className="text-center">
-        Your Score: {score} out of {questions?.length}
-      </h2>
-      <button
-        className="btn btn-dark"
-        onClick={getResult}
-        disabled={loading || !selectedSubject || selectedModules.length === 0}
-      >
-        {loading ? "Loading..." : "Generate More Questions"}
-      </button>
     </div>
   );
 }

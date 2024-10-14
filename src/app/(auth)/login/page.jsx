@@ -10,14 +10,12 @@ const Login = () => {
   const props = useContext(LayoutContext);
 
   const handleLogin = async () => {
-    console.log(roll_no, password);
     const { data, error } = await supabase
       .from("Students")
       .select("*")
       .eq("roll_no", parseInt(roll_no))
       .eq("password", parseInt(password));
 
-    console.log(data, error);
     if (data && data.length > 0) {
       localStorage.setItem("user", JSON.stringify(data[0]));
       props.setUser(data[0]);

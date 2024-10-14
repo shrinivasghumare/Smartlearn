@@ -1,43 +1,51 @@
-export function ShowQuestions({ index, handleAnswerChange, question }) {
+export function ShowQuestions({
+  currentQuestionIndex,
+  handleAnswerChange,
+  questions,
+  userAnswers,
+}) {
   return (
-    <div key={index} className="mb-4">
+    <div key={currentQuestionIndex} className="mb-4">
       <h5 className="card-title">
-        Q{index + 1}: {question?.question}
+        Q{currentQuestionIndex + 1}: {questions[currentQuestionIndex]?.question}
       </h5>
       <p className="text-muted">
         <span className="badge rounded-pill text-bg-info text-truncate img-fluid">
-          {question?.category}
+          {questions[currentQuestionIndex]?.category}
         </span>{" "}
         <span className="badge rounded-pill text-bg-primary text-truncate img-fluid">
-          {question?.topic}
+          {questions[currentQuestionIndex]?.topic}
         </span>{" "}
-        {question?.fromNotes && (
+        {questions[currentQuestionIndex]?.fromNotes && (
           <span className="badge rounded-pill text-bg-secondary text-truncate img-fluid">
             Notes
           </span>
         )}{" "}
         <span
           className={`badge rounded-pill text-bg-${
-            question?.difficulty === "Easy"
+            questions[currentQuestionIndex]?.difficulty === "Easy"
               ? "success"
-              : question?.difficulty === "Medium"
+              : questions[currentQuestionIndex]?.difficulty === "Medium"
               ? "warning"
               : "danger"
           } text-truncate img-fluid`}
         >
-          {question?.difficulty}
+          {questions[currentQuestionIndex]?.difficulty}
         </span>
       </p>
       <ul className="list-unstyled">
-        {question?.options?.map((option, i) => (
+        {questions[currentQuestionIndex]?.options?.map((option, i) => (
           <li key={i} className="mb-2">
             <label className="form-check-label">
               <input
                 className="form-check-input me-2"
                 type="radio"
-                name={`question-${index}`}
+                name={`question-${currentQuestionIndex}`}
                 value={option}
-                onChange={() => handleAnswerChange(index, option)}
+                checked={userAnswers[currentQuestionIndex] === option}
+                onChange={() =>
+                  handleAnswerChange(currentQuestionIndex, option)
+                }
               />
               {option.toString()}
             </label>
