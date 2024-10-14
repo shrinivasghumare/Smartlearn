@@ -40,7 +40,7 @@ const NavBar = () => {
             href={user ? "/" : "/login"}
           >
             <Image src={logo} width={50} alt="vidyagram"/>
-            {`VidyaGram${(user && "-" + user?.username) || ""}`}
+            {`VidyaGram${(user && "-" + user?.roll_no) || ""}`}
           </Link>
           {user && (
             <>

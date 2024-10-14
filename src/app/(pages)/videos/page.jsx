@@ -1,6 +1,7 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useContext } from "react";
 import { supabase } from "../../_lib/supabaseClient";
+import LayoutContext from "../../context/LayoutContext";
 import Link from "next/link";
 import "./styles.css";
 import "../../globals.css";
@@ -18,7 +19,7 @@ const Videos = () => {
   );
   const branches = ["CE", "AIDS", "ECS", "MECH"];
   const years = ["FE", "SE", "TE", "BE"];
-
+  const { user } = useContext(LayoutContext);
   useEffect(() => {
     setBranch(localStorage.getItem("branch") || "");
     setYear(localStorage.getItem("year") || "");
@@ -179,7 +180,7 @@ const Videos = () => {
         ) : (
           !loadingModules && <p>{moduleMessage}</p>
         )}
-        {moduleMessage != "Click on the search button!" && (
+        {user.isAdmin && moduleMessage != "Click on the search button!" && (
           <InsertModuleBox
             modules={modules}
             subject={subject}

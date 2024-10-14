@@ -5,16 +5,16 @@ import LayoutContext from "../../context/LayoutContext";
 import "./styles.css";
 import "../../globals.css";
 const Login = () => {
-  const [username, setUsername] = useState("");
+  const [roll_no, setRoll_no] = useState("");
   const [password, setPassword] = useState("");
   const props = useContext(LayoutContext);
 
   const handleLogin = async () => {
-    console.log(username, password);
+    console.log(roll_no, password);
     const { data, error } = await supabase
       .from("Students")
       .select("*")
-      .eq("username", parseInt(username))
+      .eq("roll_no", parseInt(roll_no))
       .eq("password", parseInt(password));
 
     console.log(data, error);
@@ -23,7 +23,7 @@ const Login = () => {
       props.setUser(data[0]);
       props.router.push("/");
     } else {
-      alert("Invalid username or password");
+      alert("Invalid Roll No. or password");
     }
   };
 
@@ -34,24 +34,25 @@ const Login = () => {
         <input
           type="number"
           placeholder="Username"
-          value={username}
+          value={roll_no}
           className="form-control"
-          onChange={(e) => setUsername(e.target.value)}
+          onChange={(e) => setRoll_no(e.target.value)}
           required
         />
         <input
-          type="number"
+          type="password"
           placeholder="Password"
           value={password}
           className="form-control"
           onChange={(e) => setPassword(e.target.value)}
           required
+          autoComplete="password"
         />
         <button
           onClick={handleLogin}
           className="btn btn-dark w-100 m-2"
           type="submit"
-          disabled={!(username && password)}
+          disabled={!(roll_no && password)}
         >
           Login
         </button>

@@ -1,10 +1,11 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect,useContext } from "react";
+import LayoutContext from "../../../context/LayoutContext";
 import { supabase } from "../../../_lib/supabaseClient";
 import "../../../globals.css";
 
 export default function Module({ params }) {
-
+  const {user} = useContext(LayoutContext);
   const [moduleLinks, setModuleLinks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [subject, setSubject] = useState();
@@ -148,11 +149,11 @@ export default function Module({ params }) {
               />
             </div>
           ))}
-          <AddNewVideo
+          {user.isAdmin && <AddNewVideo
             newLink={newLink}
             setNewLink={setNewLink}
             handleAddLink={handleAddLink}
-          />
+          />}
         </div>
       ) : (
         !loading && (

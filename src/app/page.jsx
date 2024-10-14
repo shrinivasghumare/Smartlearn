@@ -15,15 +15,18 @@ export default function Home() {
   return (
     <div className="hero_page">
       {props.user && (
-        <div className="card_container d-flex align-items-center justify-space-evenly container">
-          {cards.map((card, idx) => {
-            return (
-              <Link className="cards" href={card.href} key={idx}>
-                {card.text}
-              </Link>
-            );
-          })}
-        </div>
+        <>
+          <h1 className="container font-monospace">Hello! {props.user.username}</h1>
+          <div className="card_container d-flex align-items-center justify-space-evenly container">
+            {cards.map((card, idx) => {
+              return (
+                <Link className="cards" href={card.href} key={idx}>
+                  {card.text}
+                </Link>
+              );
+            })}
+          </div>
+        </>
       )}
     </div>
   );

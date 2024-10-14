@@ -36,7 +36,7 @@ export default function VideoLayout({ children }) {
         )}
         {children}
         <div
-          className="showNavBtn btn btn-dark m-1"
+          className="showNavBtn btn btn-dark m-1 z-1"
           onClick={() => setNavVisible((x) => !x)}
         >
           {navVisible ? <X_Square /> : <ThreeDots />}

@@ -106,6 +106,7 @@ export default function Home() {
     const selectedTopics = selectedModules
       .flatMap((mod) => mod.topics)
       .join(", ");
+    const NumberOfQuestions = 10;
     const prompt = `
     Generate multiple-choice questions (MCQs) based on the following modules, notes, and topics. Each question should include one correct answer and three incorrect answers. The output should be formatted as JSON, containing the following fields:
     [
@@ -127,7 +128,7 @@ export default function Home() {
     Modules: ${selectedModules.map((mod) => mod.name).join(", ")}
     Topics: ${selectedTopics}
     Notes: {${professorNotes ? professorNotes : "No notes provided"}}
-    Number of questions required: 10
+    Number of questions required: ${NumberOfQuestions}
     `;
     // console.log(prompt);
     try {
