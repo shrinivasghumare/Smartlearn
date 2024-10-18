@@ -1,6 +1,9 @@
-export function ShowQuestions({
+export default function ShowQuestions({
   currentQuestionIndex,
   handleAnswerChange,
+  handleNextQuestion,
+  handlePreviousQuestion,
+  handleSubmit,
   questions,
   userAnswers,
 }) {
@@ -19,6 +22,11 @@ export function ShowQuestions({
         {questions[currentQuestionIndex]?.fromNotes && (
           <span className="badge rounded-pill text-bg-secondary text-truncate img-fluid">
             Notes
+          </span>
+        )}{" "}
+        {questions[currentQuestionIndex]?.fromPDF && (
+          <span className="badge rounded-pill text-bg-secondary text-truncate img-fluid">
+            PDF
           </span>
         )}{" "}
         <span
@@ -52,6 +60,24 @@ export function ShowQuestions({
           </li>
         ))}
       </ul>
+      <div className="d-flex justify-content-between">
+        <button
+          className="btn btn-dark"
+          onClick={handlePreviousQuestion}
+          disabled={currentQuestionIndex === 0}
+        >
+          Previous
+        </button>
+        {currentQuestionIndex === questions.length - 1 ? (
+          <button className="btn btn-success" onClick={handleSubmit}>
+            Submit
+          </button>
+        ) : (
+          <button className="btn btn-dark" onClick={handleNextQuestion}>
+            Next
+          </button>
+        )}
+      </div>
     </div>
   );
 }

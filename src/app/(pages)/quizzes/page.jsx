@@ -1,13 +1,13 @@
 "use client";
 import { useState, useEffect, useMemo, useCallback, useContext } from "react";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import curriculumData from "./_data/curriculum.json";
-import { ShowQuestions } from "../../_components/quiz_Components/ShowQuestions";
-import { Results } from "../../_components/quiz_Components/Results";
 import { supabase } from "../../_lib/supabaseClient";
+import curriculumData from "./_data/curriculum.json";
 import LayoutContext from "../../context/LayoutContext";
+import ShowQuestions from "../../_components/quiz_Components/ShowQuestions";
+import Results from "../../_components/quiz_Components/Results";
+import QuizStats from "../../_components/quiz_Components/QuizStats";
 
-// Function to shuffle an array
 const shuffleArray = (array) => {
   const arr = [...array];
   for (let i = arr.length - 1; i > 0; i--) {
@@ -33,6 +33,8 @@ export default function Home() {
   const [quizStats, setQuizStats] = useState(null);
   const { user } = useContext(LayoutContext);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [pdfSummary, setPdfSummary] = useState("No pdf file provided!");
+  const [file, setFile] = useState(null);
 
   // Fetch quiz history from Supabase when the page loads
   const fetchQuizStats = useCallback(async () => {
@@ -71,6 +73,7 @@ export default function Home() {
     setSemesters(semesterList);
     if (user) fetchQuizStats();
   }, [user, fetchQuizStats]);
+
   // Handle the semester selection and load its subjects
   const handleSemesterChange = (semester) => {
     setSelectedSemester(semester);
@@ -126,6 +129,43 @@ export default function Home() {
     setIsAllChecked(!isAllChecked);
   };
 
+  const handlePDFSubmit = useCallback(async () => {
+    try {
+      // console.log(file);
+      if (!file) return;
+      const fileReader = new FileReader();
+      fileReader.onload = async (event) => {
+        const typedarray = new Uint8Array(event.target.result);
+        const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
+        // console.log("loaded pdf:", pdf.numPages);
+
+        let text = "";
+
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+          const page = await pdf.getPage(pageNum);
+          const content = await page.getTextContent();
+          content.items.forEach((item) => {
+            text += item.str + " ";
+          });
+        }
+        const prompt = `
+            give me a summary of this text!
+            ${text}
+          `;
+        const genAI = new GoogleGenerativeAI(
+          process.env.NEXT_PUBLIC_GEMINI_API_KEY
+        );
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const result = await model.generateContent(prompt);
+        setPdfSummary(result.response.text());
+        // console.log(result.response.text());
+      };
+      fileReader.readAsArrayBuffer(file);
+    } catch (err) {
+      console.log(err);
+    }
+  }, [file]);
+
   const NumberOfQuestions = 10;
   const getResult = useCallback(async () => {
     setQuestions([]);
@@ -134,10 +174,12 @@ export default function Home() {
       alert("Please select at least one module.");
       return;
     }
-
     const selectedTopics = selectedModules
       .flatMap((mod) => mod.topics)
       .join(", ");
+
+    handlePDFSubmit();
+
     const prompt = `
     Generate multiple-choice questions (MCQs) based on the following modules, notes, and topics. Each question should include one correct answer and three incorrect answers. The output should be formatted as JSON, containing the following fields:
     [
@@ -151,26 +193,25 @@ export default function Home() {
         "explanation": "{a brief explanation about the correct answer}",
         "topic": "{a short topic description}",
         "fromNotes": true | false
+        "fromPDF": true | false
       }
     ]
     Modules: ${selectedModules.map((mod) => mod.name).join(", ")}
     Topics: ${selectedTopics}
     Notes: {${professorNotes ? professorNotes : "No notes provided"}}
+    PDF content: ${pdfSummary}
     Number of questions required: ${NumberOfQuestions}
     `;
-
+    // console.log(prompt);
     try {
       setLoading(true);
       setShowResults(false);
-
       const genAI = new GoogleGenerativeAI(
         process.env.NEXT_PUBLIC_GEMINI_API_KEY
       );
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
       const result = await model.generateContent(prompt);
       const rawText = result.response.text();
-
       const cleanedText = rawText
         .replace(/```json\n/g, "")
         .replace(/\\n/g, "")
@@ -196,7 +237,7 @@ export default function Home() {
       setUserAnswers({});
       setLoading(false);
     }
-  }, [selectedModules, professorNotes]);
+  }, [selectedModules, professorNotes, pdfSummary, handlePDFSubmit]);
 
   const handleAnswerChange = (index, answer) => {
     setUserAnswers((prevAnswers) => ({
@@ -262,7 +303,6 @@ export default function Home() {
   return (
     <div className="container-fluid">
       <div className="row mt-4">
-        {/* Left Pane: Inputs */}
         <div className="col-md-4 col-lg-3">
           <div className="card shadow-sm p-4">
             <h4 className="text-center">Configure Quiz</h4>
@@ -328,21 +368,17 @@ export default function Home() {
                           </label>
                         </div>
                       ))}
-                      <button
-                        className="mt-2 btn btn-sm btn-outline-dark w-100"
-                        onClick={toggleCheckAll}
-                      >
-                        {isAllChecked ? "Uncheck All" : "Check All"}
-                      </button>
-                      <button
-                        className="mt-2 btn btn-dark w-100"
-                        onClick={getResult}
-                        disabled={
-                          loading || !selectedSubject || !selectedModules.length
-                        }
-                      >
-                        {loading ? "Loading..." : "Generate Questions"}
-                      </button>
+                      <ToggleCheckBtn
+                        toggleCheckAll={toggleCheckAll}
+                        isAllChecked={isAllChecked}
+                      />
+                      <input
+                        type="file"
+                        accept=".pdf"
+                        className="form-control mt-2"
+                        id="inputGroupFile01"
+                        onChange={(e) => setFile(e.target.files[0])}
+                      />
                     </>
                   )}
                 </>
@@ -359,7 +395,12 @@ export default function Home() {
                 onChange={(e) => setProfessorNotes(e.target.value)}
                 placeholder="Add your notes here (optional)"
               />
-
+              <GenerateQuizBtn
+                getResult={getResult}
+                loading={loading}
+                selectedSubject={selectedSubject}
+                selectedModules={selectedModules}
+              />
               {quizStats && <QuizStats quizStats={quizStats} />}
             </div>
           </div>
@@ -368,15 +409,12 @@ export default function Home() {
         <div className="col-md-8 col-lg-9">
           <div className="card shadow-sm p-4">
             {!questions.length ? (
-              <button
-                className="btn btn-dark"
-                onClick={getResult}
-                disabled={
-                  loading || !selectedSubject || !selectedModules.length
-                }
-              >
-                {loading ? "Loading..." : "Generate Questions"}
-              </button>
+              <GenerateQuizBtn
+                getResult={getResult}
+                loading={loading}
+                selectedSubject={selectedSubject}
+                selectedModules={selectedModules}
+              />
             ) : showResults ? (
               <Results
                 score={score}
@@ -384,36 +422,15 @@ export default function Home() {
                 userAnswers={userAnswers}
               />
             ) : (
-              <>
-                <ShowQuestions
-                  currentQuestionIndex={currentQuestionIndex}
-                  handleAnswerChange={handleAnswerChange}
-                  questions={questions}
-                  userAnswers={userAnswers}
-                />
-
-                <div className="d-flex justify-content-between">
-                  <button
-                    className="btn btn-dark"
-                    onClick={handlePreviousQuestion}
-                    disabled={currentQuestionIndex === 0}
-                  >
-                    Previous
-                  </button>
-                  {currentQuestionIndex === questions.length - 1 ? (
-                    <button className="btn btn-success" onClick={handleSubmit}>
-                      Submit
-                    </button>
-                  ) : (
-                    <button
-                      className="btn btn-dark"
-                      onClick={handleNextQuestion}
-                    >
-                      Next
-                    </button>
-                  )}
-                </div>
-              </>
+              <ShowQuestions
+                currentQuestionIndex={currentQuestionIndex}
+                handleAnswerChange={handleAnswerChange}
+                handleNextQuestion={handleNextQuestion}
+                handlePreviousQuestion={handlePreviousQuestion}
+                handleSubmit={handleSubmit}
+                questions={questions}
+                userAnswers={userAnswers}
+              />
             )}
           </div>
         </div>
@@ -422,30 +439,30 @@ export default function Home() {
   );
 }
 
-function QuizStats({ quizStats }) {
+function GenerateQuizBtn({
+  getResult,
+  loading,
+  selectedSubject,
+  selectedModules,
+}) {
   return (
-    <div className="card mt-3 p-3">
-      <h5>Quiz Stats</h5>
-      <table className="table table-bordered">
-        <tbody>
-          <tr>
-            <th>Total Quizzes</th>
-            <td>{quizStats.totalQuizzes}</td>
-          </tr>
-          <tr>
-            <th>Average Score</th>
-            <td>{quizStats.avgScore}</td>
-          </tr>
-          <tr>
-            <th>Highest Score</th>
-            <td>{quizStats.highestScore}</td>
-          </tr>
-          <tr>
-            <th>Lowest Score</th>
-            <td>{quizStats.lowestScore}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <button
+      className="btn btn-dark w-100 mt-2"
+      onClick={getResult}
+      disabled={loading || !selectedSubject || !selectedModules.length}
+    >
+      {loading ? "Loading..." : "Generate Questions"}
+    </button>
+  );
+}
+
+function ToggleCheckBtn({ toggleCheckAll, isAllChecked }) {
+  return (
+    <button
+      className="mt-2 btn btn-sm btn-outline-dark w-100"
+      onClick={toggleCheckAll}
+    >
+      {isAllChecked ? "Uncheck All" : "Check All"}
+    </button>
   );
 }

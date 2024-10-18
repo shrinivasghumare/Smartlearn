@@ -38,12 +38,26 @@ const RootLayout = ({ children }) => {
         </head>
         <body>
           <Navbar />
-          <div className="mt-4" />
           {user ? children : <Login />}
           <Script
             src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
             crossOrigin="anonymous"
+            strategy="lazyOnload"
+          />
+          <Script
+            type="module"
+            src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.3.136/pdf.min.mjs"
+            strategy="lazyOnload"
+          />
+          <Script
+            type="module"
+            src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.3.136/pdf_viewer.min.css"
+            strategy="lazyOnload"
+          />
+          <Script
+            src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.3.136/pdf.worker.mjs"
+            type="module"
             strategy="lazyOnload"
           />
         </body>

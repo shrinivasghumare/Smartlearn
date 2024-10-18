@@ -17,29 +17,15 @@ const NavBar = () => {
     { href: "/assignments", text: "Assignments" },
   ];
 
-  const navbarStyle = {
-    top: 0,
-    left: 0,
-    background: "rgba(255, 255, 255, 0.25)",
-    boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
-    backdropFilter: "blur(4px)",
-    WebkitBackdropFilter: "blur(4px)",
-    borderRadius: "10px 10px",
-    border: "1px solid rgba(255, 255, 255, 0.18)",
-  };
-
   return (
     <>
-      <nav
-        className="navbar navbar-expand-lg bg-body-tertiary position-sticky"
-        style={navbarStyle}
-      >
+      <nav className="navbar navbar-expand-lg bg-body-tertiary rounded">
         <div className="container-fluid">
           <Link
             className="navbar-brand d-flex align-items-center"
             href={user ? "/" : "/login"}
           >
-            <Image src={logo} width={50} alt="vidyagram"/>
+            <Image src={logo} width={50} alt="vidyagram" />
             {`VidyaGram${(user && "-" + user?.roll_no) || ""}`}
           </Link>
           {user && (
@@ -53,7 +39,7 @@ const NavBar = () => {
                 aria-expanded="false"
                 aria-label="Toggle navigation"
               >
-                <span className="navbar-toggler-icon"/>
+                <span className="navbar-toggler-icon" />
               </button>
               <div
                 className="collapse navbar-collapse"

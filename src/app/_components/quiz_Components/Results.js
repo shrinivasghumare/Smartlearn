@@ -1,6 +1,6 @@
 import CheckIcon from "./CheckIcon";
 import WrongIcon from "./WrongIcon";
-export function Results({
+export default function Results({
   score,
   questions,
   userAnswers,
