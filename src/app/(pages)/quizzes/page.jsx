@@ -2,8 +2,8 @@
 import { useState, useEffect, useMemo, useCallback, useContext } from "react";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import curriculumData from "./_data/curriculum.json";
-import { ShowQuestions } from "../../_components/_quiz_Components/ShowQuestions";
-import { Results } from "../../_components/_quiz_Components/Results";
+import { ShowQuestions } from "../../_components/quiz_Components/ShowQuestions";
+import { Results } from "../../_components/quiz_Components/Results";
 import { supabase } from "../../_lib/supabaseClient";
 import LayoutContext from "../../context/LayoutContext";
 
