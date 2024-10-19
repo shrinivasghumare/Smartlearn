@@ -7,7 +7,7 @@ import LayoutContext from "../../context/LayoutContext";
 import ShowQuestions from "../../_components/quiz_Components/ShowQuestions";
 import Results from "../../_components/quiz_Components/Results";
 import QuizStats from "../../_components/quiz_Components/QuizStats";
-
+import QuizChart from "../../_components/quiz_Components/QuizChart";
 const shuffleArray = (array) => {
   const arr = [...array];
   for (let i = arr.length - 1; i > 0; i--) {
@@ -36,24 +36,27 @@ export default function Home() {
   const [pdfSummary, setPdfSummary] = useState("No pdf file provided!");
   const [file, setFile] = useState(null);
 
-  // Fetch quiz history from Supabase when the page loads
   const fetchQuizStats = useCallback(async () => {
     try {
-      const { data, error } = await supabase
-        .from("quiz_data")
-        .select("*")
-        .eq("roll_no", user.roll_no);
+      const { data, error } = await supabase.from("quiz_data").select("*");
 
       if (error) throw error;
-
-      if (data.length > 0) {
-        const totalQuizzes = data.length;
-        const totalScore = data.reduce((acc, quiz) => acc + quiz.score, 0);
+      const userQuizData = data.filter((x) => x.roll_no === user.roll_no);
+      if (userQuizData.length > 0) {
+        const totalQuizzes = userQuizData.length;
+        const totalScore = userQuizData.reduce(
+          (acc, quiz) => acc + quiz.score,
+          0
+        );
         const avgScore = (totalScore / totalQuizzes).toFixed(2);
-        const highestScore = Math.max(...data.map((quiz) => quiz.score));
-        const lowestScore = Math.min(...data.map((quiz) => quiz.score));
+        const highestScore = Math.max(
+          ...userQuizData.map((quiz) => quiz.score)
+        );
+        const lowestScore = Math.min(...userQuizData.map((quiz) => quiz.score));
 
         setQuizStats({
+          data,
+          userQuizData,
           totalQuizzes,
           avgScore,
           highestScore,
@@ -67,14 +70,12 @@ export default function Home() {
     }
   }, [user.roll_no]);
 
-  // Load semesters from the curriculum JSON on first render
   useEffect(() => {
     const semesterList = Object.keys(curriculumData.CS);
     setSemesters(semesterList);
     if (user) fetchQuizStats();
   }, [user, fetchQuizStats]);
 
-  // Handle the semester selection and load its subjects
   const handleSemesterChange = (semester) => {
     setSelectedSemester(semester);
     const subjectList = Object.keys(curriculumData.CS[semester].courses).map(
@@ -301,7 +302,7 @@ export default function Home() {
   };
 
   return (
-    <div className="container-fluid">
+    <div className="container-fluid mb-5">
       <div className="row mt-4">
         <div className="col-md-4 col-lg-3">
           <div className="card shadow-sm p-4">
@@ -327,63 +328,59 @@ export default function Home() {
                 ))}
               </select>
 
-              {selectedSemester && (
-                <>
-                  <label htmlFor="subject" className="form-label">
-                    Subject:
-                  </label>
-                  <select
-                    className="form-select mb-3"
-                    value={selectedSubject}
-                    onChange={(e) => handleSubjectChange(e.target.value)}
-                  >
-                    <option value="" disabled>
-                      Select Subject
-                    </option>
-                    {subjects.map((subject, index) => (
-                      <option key={index} value={subject.name}>
-                        {subject.name}
-                      </option>
-                    ))}
-                  </select>
+              <label htmlFor="subject" className="form-label">
+                Subject:
+              </label>
+              <select
+                className="form-select mb-3"
+                value={selectedSubject}
+                onChange={(e) => handleSubjectChange(e.target.value)}
+                disabled={!selectedSemester}
+              >
+                <option value="" disabled>
+                  Select Subject
+                </option>
+                {subjects.map((subject, index) => (
+                  <option key={index} value={subject.name}>
+                    {subject.name}
+                  </option>
+                ))}
+              </select>
 
-                  {selectedSubject && (
-                    <>
-                      <label className="form-label">Modules:</label>
-                      {modules.map((module, index) => (
-                        <div className="form-check" key={index}>
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            value={module.name}
-                            checked={selectedModules.includes(module)}
-                            onChange={() => handleModuleChange(module)}
-                            id={`module-${index}`}
-                          />
-                          <label
-                            className="form-check-label w-100 text-truncate"
-                            htmlFor={`module-${index}`}
-                          >
-                            {module.name}
-                          </label>
-                        </div>
-                      ))}
-                      <ToggleCheckBtn
-                        toggleCheckAll={toggleCheckAll}
-                        isAllChecked={isAllChecked}
-                      />
+              {selectedSubject && (
+                <>
+                  <label className="form-label">Modules:</label>
+                  {modules.map((module, index) => (
+                    <div className="form-check" key={index}>
                       <input
-                        type="file"
-                        accept=".pdf"
-                        className="form-control mt-2"
-                        id="inputGroupFile01"
-                        onChange={(e) => setFile(e.target.files[0])}
+                        className="form-check-input"
+                        type="checkbox"
+                        value={module.name}
+                        checked={selectedModules.includes(module)}
+                        onChange={() => handleModuleChange(module)}
+                        id={`module-${index}`}
                       />
-                    </>
-                  )}
+                      <label
+                        className="form-check-label w-100 text-truncate"
+                        htmlFor={`module-${index}`}
+                      >
+                        {module.name}
+                      </label>
+                    </div>
+                  ))}
+                  <ToggleCheckBtn
+                    toggleCheckAll={toggleCheckAll}
+                    isAllChecked={isAllChecked}
+                  />
                 </>
               )}
-
+              <input
+                type="file"
+                accept=".pdf"
+                className="form-control mt-2"
+                id="inputGroupFile01"
+                onChange={(e) => setFile(e.target.files[0])}
+              />
               <label className="form-label mt-3" htmlFor="professorNotes">
                 Professor Notes:
               </label>
@@ -409,12 +406,7 @@ export default function Home() {
         <div className="col-md-8 col-lg-9">
           <div className="card shadow-sm p-4">
             {!questions.length ? (
-              <GenerateQuizBtn
-                getResult={getResult}
-                loading={loading}
-                selectedSubject={selectedSubject}
-                selectedModules={selectedModules}
-              />
+              <QuizChart quizStats={quizStats} />
             ) : showResults ? (
               <Results
                 score={score}

@@ -2,7 +2,7 @@
 
 .card_container {
   flex-wrap: wrap;
-  min-height: 70vh;
+  min-height: 80vh;
   justify-content: space-evenly;
 
   .cards {
