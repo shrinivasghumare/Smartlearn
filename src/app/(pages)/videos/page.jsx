@@ -1,12 +1,11 @@
 "use client";
 import { useState, useEffect, useCallback, useContext } from "react";
-import { supabase } from "../../_lib/supabaseClient";
-import LayoutContext from "../../context/LayoutContext";
+import { supabase } from "@lib/supabaseClient";
+import LayoutContext from "@context/LayoutContext";
+import InsertModuleBox from "@components/video_components/InsertModuleBox";
 import Link from "next/link";
 import "./styles.css";
-import "../../globals.css";
-import InsertModuleBox from "../../_components/video_components/InsertModuleBox";
-
+import "@/app/globals.css";
 const Videos = () => {
   const [branch, setBranch] = useState("");
   const [year, setYear] = useState("");

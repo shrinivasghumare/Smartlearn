@@ -2,7 +2,12 @@
   "compilerOptions": {
     "jsx": "react",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@components/*": ["./src/app/_components/*"],
+      "@lib/*": ["./src/app/_lib/*"],
+      "@data/*": ["./src/app/(pages)/quizzes/_data/*"],
+      "@context/*": ["./src/app/context/*"],
+      "@quizComponents/*": ["./src/app/_components/quiz_Components/*"]
     }
   }
 }

@@ -1,26 +1,18 @@
 "use client";
-import {
-  useState,
-  useEffect,
-  useMemo,
-  useCallback,
-  useContext,
-  lazy,
-  Suspense,
-} from "react";
+import { useState, useEffect, useMemo, useCallback, useContext, lazy, Suspense } from "react";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { supabase } from "../../_lib/supabaseClient";
-import curriculumData from "./_data/curriculum.json";
-import LayoutContext from "../../context/LayoutContext";
-import ShowQuestions from "../../_components/quiz_Components/ShowQuestions";
-import Results from "../../_components/quiz_Components/Results";
-import Loader from "../../_components/Loader";
-const QuizStats = lazy(() =>
-  import("../../_components/quiz_Components/QuizStats")
-);
-const QuizChart = lazy(() =>
-  import("../../_components/quiz_Components/QuizChart")
-);
+import { supabase } from "@lib/supabaseClient";
+import curriculumData from "@data/curriculum.json";
+import LayoutContext from "@context/LayoutContext";
+import { GenerateQuizBtn } from "@quizComponents/Buttons";
+const ShowQuestions = lazy(() => import("@quizComponents/ShowQuestions"));
+const Results = lazy(() => import("@quizComponents/Results"));
+const QuizConfig = lazy(() => import("@quizComponents/QuizConfig"));
+const Loader = lazy(() => import("@components/Loader"));
+const QuizStats = lazy(() => import("@quizComponents/QuizStats"));
+const QuizChart = lazy(() => import("@quizComponents/QuizChart"));
+
+
 const shuffleArray = (array) => {
   const arr = [...array];
   for (let i = arr.length - 1; i > 0; i--) {
@@ -115,32 +107,6 @@ export default function Home() {
     checkboxes.forEach((checkbox) => {
       checkbox.checked = false;
     });
-  };
-
-  const handleModuleChange = (module) => {
-    const isSelected = selectedModules.includes(module);
-    if (isSelected) {
-      setSelectedModules(selectedModules.filter((mod) => mod !== module)); // Deselect
-    } else {
-      setSelectedModules([...selectedModules, module]); // Select
-    }
-  };
-
-  const toggleCheckAll = () => {
-    if (isAllChecked) {
-      setSelectedModules([]);
-      const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-      checkboxes.forEach((checkbox) => {
-        checkbox.checked = false;
-      });
-    } else {
-      setSelectedModules(modules);
-      const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-      checkboxes.forEach((checkbox) => {
-        checkbox.checked = true;
-      });
-    }
-    setIsAllChecked(!isAllChecked);
   };
 
   const handlePDFSubmit = useCallback(async () => {
@@ -253,13 +219,6 @@ export default function Home() {
     }
   }, [selectedModules, professorNotes, pdfSummary, handlePDFSubmit]);
 
-  const handleAnswerChange = (index, answer) => {
-    setUserAnswers((prevAnswers) => ({
-      ...prevAnswers,
-      [index]: answer,
-    }));
-  };
-
   const score = useMemo(() => {
     const correctAnswers = questions.map((q) => q.correct_answer);
     return Object.values(userAnswers).filter(
@@ -302,179 +261,66 @@ export default function Home() {
     fetchQuizStats();
   };
 
-  const handleNextQuestion = () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    }
-  };
-
-  const handlePreviousQuestion = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1);
-    }
+  const quizConfigProps = {
+    handleSemesterChange,
+    handleSubjectChange,
+    setProfessorNotes,
+    setFile,
+    semesters,
+    subjects,
+    modules,
+    selectedSemester,
+    selectedModules,
+    selectedSubject,
+    isAllChecked,
+    professorNotes,
+    setIsAllChecked,
+    setSelectedModules,
   };
 
   return (
-    <div className="container-fluid mb-5">
-      <div className="row mt-4">
-        <div className="col-md-4 col-lg-3">
-          <div className="card shadow-sm p-4">
-            <h4 className="text-center">Configure Quiz</h4>
-            <hr />
-            <div>
-              <label htmlFor="semester" className="form-label">
-                Semester:
-              </label>
-              <select
-                className="form-select mb-3"
-                value={selectedSemester}
-                id="semester"
-                onChange={(e) => handleSemesterChange(e.target.value)}
-              >
-                <option value="" disabled>
-                  Select Semester
-                </option>
-                {semesters.map((semester) => (
-                  <option key={semester} value={semester}>
-                    {semester}
-                  </option>
-                ))}
-              </select>
-
-              <label htmlFor="subject" className="form-label">
-                Subject:
-              </label>
-              <select
-                className="form-select mb-3"
-                id="subject"
-                value={selectedSubject}
-                onChange={(e) => handleSubjectChange(e.target.value)}
-                disabled={!selectedSemester}
-              >
-                <option value="" disabled>
-                  Select Subject
-                </option>
-                {subjects.map((subject, index) => (
-                  <option key={index} value={subject.name}>
-                    {subject.name}
-                  </option>
-                ))}
-              </select>
-
-              {selectedSubject && (
-                <>
-                  <div className="form-label">Modules:</div>
-                  {modules.map((module, index) => (
-                    <div className="form-check" key={index}>
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        value={module.name}
-                        checked={selectedModules.includes(module)}
-                        onChange={() => handleModuleChange(module)}
-                        id={`module-${index}`}
-                      />
-                      <label
-                        className="form-check-label w-100 text-truncate"
-                        htmlFor={`module-${index}`}
-                      >
-                        {module.name}
-                      </label>
-                    </div>
-                  ))}
-                  <ToggleCheckBtn
-                    toggleCheckAll={toggleCheckAll}
-                    isAllChecked={isAllChecked}
-                  />
-                </>
-              )}
-              <input
-                type="file"
-                accept=".pdf"
-                className="form-control mt-2"
-                id="inputGroupFile01"
-                onChange={(e) => setFile(e.target.files[0])}
-              />
-              <label className="form-label mt-3" htmlFor="professorNotes">
-                Professor Notes:
-              </label>
-              <textarea
-                className="form-control mb-3"
-                id="professorNotes"
-                rows="3"
-                value={professorNotes}
-                onChange={(e) => setProfessorNotes(e.target.value)}
-                placeholder="Add your notes here (optional)"
-              />
-              <GenerateQuizBtn
-                getResult={getResult}
-                loading={loading}
-                selectedSubject={selectedSubject}
-                selectedModules={selectedModules}
-              />
-              {quizStats && (
-                <Suspense fallback={<div className="mt-2">Loading Quiz Stats...</div>}>
-                  <QuizStats quizStats={quizStats} />
-                </Suspense>
-              )}
-            </div>
-          </div>
+    <div className="container-fluid mb-5 row mt-4">
+      <div className="col-md-4 col-lg-3">
+        <div className="card shadow-sm p-4">
+          <QuizConfig {...quizConfigProps} />
+          <GenerateQuizBtn
+            getResult={getResult}
+            loading={loading}
+            selectedSubject={selectedSubject}
+            selectedModules={selectedModules}
+          />
+          {quizStats && (
+            <Suspense fallback={<>Loading Quiz Stats...</>}>
+              <QuizStats quizStats={quizStats} />
+            </Suspense>
+          )}
         </div>
+      </div>
 
-        <div className="col-md-8 col-lg-9">
-          <div className="card shadow-sm p-4">
-            {!questions.length ? (
-              <Suspense fallback={<Loader />}>
-                <QuizChart quizStats={quizStats} />
-              </Suspense>
-            ) : showResults ? (
-              <Results
-                score={score}
-                questions={questions}
-                userAnswers={userAnswers}
-              />
-            ) : (
-              <ShowQuestions
-                currentQuestionIndex={currentQuestionIndex}
-                handleAnswerChange={handleAnswerChange}
-                handleNextQuestion={handleNextQuestion}
-                handlePreviousQuestion={handlePreviousQuestion}
-                handleSubmit={handleSubmit}
-                questions={questions}
-                userAnswers={userAnswers}
-              />
-            )}
-          </div>
+      <div className="col-md-8 col-lg-9">
+        <div className="card shadow-sm p-4">
+          {!questions.length ? (
+            <Suspense fallback={<Loader />}>
+              <QuizChart quizStats={quizStats} />
+            </Suspense>
+          ) : showResults ? (
+            <Results
+              score={score}
+              questions={questions}
+              userAnswers={userAnswers}
+            />
+          ) : (
+            <ShowQuestions
+              currentQuestionIndex={currentQuestionIndex}
+              setCurrentQuestionIndex={setCurrentQuestionIndex}
+              handleSubmit={handleSubmit}
+              questions={questions}
+              userAnswers={userAnswers}
+              setUserAnswers={setUserAnswers}
+            />
+          )}
         </div>
       </div>
     </div>
-  );
-}
-
-function GenerateQuizBtn({
-  getResult,
-  loading,
-  selectedSubject,
-  selectedModules,
-}) {
-  return (
-    <button
-      className="btn btn-dark w-100 mt-2"
-      onClick={getResult}
-      disabled={loading || !selectedSubject || !selectedModules.length}
-    >
-      {loading ? "Loading..." : "Generate Questions"}
-    </button>
-  );
-}
-
-function ToggleCheckBtn({ toggleCheckAll, isAllChecked }) {
-  return (
-    <button
-      className="mt-2 btn btn-sm btn-outline-dark w-100"
-      onClick={toggleCheckAll}
-    >
-      {isAllChecked ? "Uncheck All" : "Check All"}
-    </button>
   );
 }

@@ -1,10 +1,5 @@
-import CheckIcon from "./CheckIcon";
-import WrongIcon from "./WrongIcon";
-export default function Results({
-  score,
-  questions,
-  userAnswers,
-}) {
+import { CheckIcon, WrongIcon } from "./Icons";
+export default function Results({ score, questions, userAnswers }) {
   return (
     <div>
       <h2 className="text-center text-bg-primary rounded">
@@ -43,7 +38,9 @@ export default function Results({
               <summary className="badge rounded-pill text-bg-dark">
                 Explanation
               </summary>
-              <p className="bg-body-secondary mt-3 p-3 rounded">{question?.explanation}</p>
+              <p className="bg-body-secondary mt-3 p-3 rounded">
+                {question?.explanation}
+              </p>
             </details>
           </div>
           <ul className="list-unstyled">

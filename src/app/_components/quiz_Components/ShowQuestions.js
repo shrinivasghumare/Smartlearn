@@ -1,11 +1,10 @@
 export default function ShowQuestions({
   currentQuestionIndex,
-  handleAnswerChange,
-  handleNextQuestion,
-  handlePreviousQuestion,
+  setCurrentQuestionIndex,
   handleSubmit,
   questions,
   userAnswers,
+  setUserAnswers,
 }) {
   return (
     <div key={currentQuestionIndex} className="mb-4">
@@ -52,7 +51,10 @@ export default function ShowQuestions({
                 value={option}
                 checked={userAnswers[currentQuestionIndex] === option}
                 onChange={() =>
-                  handleAnswerChange(currentQuestionIndex, option)
+                  setUserAnswers((prevAnswers) => ({
+                    ...prevAnswers,
+                    [currentQuestionIndex]: option,
+                  }))
                 }
               />
               {option.toString()}
@@ -63,7 +65,10 @@ export default function ShowQuestions({
       <div className="d-flex justify-content-between">
         <button
           className="btn btn-dark"
-          onClick={handlePreviousQuestion}
+          onClick={() => {
+            if (currentQuestionIndex > 0)
+              setCurrentQuestionIndex(currentQuestionIndex - 1);
+          }}
           disabled={currentQuestionIndex === 0}
         >
           Previous
@@ -73,7 +78,13 @@ export default function ShowQuestions({
             Submit
           </button>
         ) : (
-          <button className="btn btn-dark" onClick={handleNextQuestion}>
+          <button
+            className="btn btn-dark"
+            onClick={() => {
+              if (currentQuestionIndex < questions.length - 1)
+                setCurrentQuestionIndex(currentQuestionIndex + 1);
+            }}
+          >
             Next
           </button>
         )}
