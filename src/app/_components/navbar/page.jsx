@@ -14,7 +14,7 @@ const navLinks = [
   { href: "/assignments", text: "Assignments" },
 ];
 const NavBar = () => {
-  const { router, user } = useContext(LayoutContext);
+  const { router, user, setUser } = useContext(LayoutContext);
   const pathName = usePathname();
 
   return (
@@ -66,7 +66,11 @@ const NavBar = () => {
                 </ul>
                 <button
                   className="btn btn-outline-dark"
-                  onClick={() => router.push("/logout")}
+                  onClick={() => {
+                    setUser(null);
+                    router.push("/login");
+                    localStorage.clear();
+                  }}
                 >
                   Logout
                 </button>
