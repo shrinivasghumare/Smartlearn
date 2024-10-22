@@ -27,24 +27,27 @@ const Login = () => {
 
   return (
     <div className="login_page">
-      <form className="login" onSubmit={(e) => e.preventDefault()}>
+      <form className="login" onSubmit={(e) => e.preventDefault()} autoComplete="on">
         <h1>Login</h1>
         <input
           type="number"
+          id="username"
           placeholder="Username"
           value={roll_no}
           className="form-control"
           onChange={(e) => setRoll_no(e.target.value)}
           required
+          autoComplete="on"
         />
         <input
           type="password"
+          id="password"
           placeholder="Password"
           value={password}
           className="form-control"
           onChange={(e) => setPassword(e.target.value)}
           required
-          autoComplete="password"
+          autoComplete="on"
         />
         <button
           onClick={handleLogin}

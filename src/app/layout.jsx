@@ -1,14 +1,14 @@
 "use client";
 import Navbar from "./_components/navbar/page";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import LayoutContext from "./context/LayoutContext";
 import Script from "next/script";
-import Login from "./(auth)/login/page";
 const RootLayout = ({ children }) => {
   const [user, setUser] = useState();
   // function used to authenticate the user before going to any other page!
   const router = useRouter();
+  const pathName = usePathname();
   useEffect(() => {
     const Checkuser = () => {
       const userDetails = JSON.parse(localStorage.getItem("user"));
@@ -20,9 +20,9 @@ const RootLayout = ({ children }) => {
       }
     };
     Checkuser();
-  }, [router]);
+  }, [router, pathName]);
 
-  const Layoutprops = { user, setUser, router };
+  const Layoutprops = { user, setUser, router};
 
   return (
     <LayoutContext.Provider value={Layoutprops}>
@@ -34,11 +34,15 @@ const RootLayout = ({ children }) => {
             integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
             crossOrigin="anonymous"
           />
+          <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.3.136/pdf_viewer.min.css"
+          />
           <title>Vidyagram</title>
         </head>
         <body>
           <Navbar />
-          {user ? children : <Login />}
+          {children}
           <Script
             src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
@@ -48,11 +52,6 @@ const RootLayout = ({ children }) => {
           <Script
             type="module"
             src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.3.136/pdf.min.mjs"
-            strategy="lazyOnload"
-          />
-          <Script
-            type="module"
-            src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.3.136/pdf_viewer.min.css"
             strategy="lazyOnload"
           />
           <Script

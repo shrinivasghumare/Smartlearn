@@ -1,11 +1,11 @@
 "use client";
-import { useState, useEffect,useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import LayoutContext from "../../../context/LayoutContext";
 import { supabase } from "../../../_lib/supabaseClient";
 import "../../../globals.css";
 
 export default function Module({ params }) {
-  const {user} = useContext(LayoutContext);
+  const { user } = useContext(LayoutContext);
   const [moduleLinks, setModuleLinks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [subject, setSubject] = useState();
@@ -31,15 +31,13 @@ export default function Module({ params }) {
           .eq("module_name", moduleName)
           .single();
 
-        if (error) {
-          console.error("Error fetching module links:", error);
-        } else {
+        if (!error) {
           const links = data?.module_link;
           setModuleLinks(links);
 
           if (links) {
             localStorage.setItem(
-              `module_links_${params.module_name}`,
+              `module_links_${params?.module_name}`,
               JSON.stringify(links)
             );
           }
@@ -50,7 +48,7 @@ export default function Module({ params }) {
 
       fetchModuleLinks();
     }
-  }, [params.module_name]);
+  }, [params?.module_name]);
 
   // Function to handle adding a new module link
   const handleAddLink = async () => {
@@ -149,11 +147,13 @@ export default function Module({ params }) {
               />
             </div>
           ))}
-          {user.isAdmin && <AddNewVideo
-            newLink={newLink}
-            setNewLink={setNewLink}
-            handleAddLink={handleAddLink}
-          />}
+          {user?.isAdmin && (
+            <AddNewVideo
+              newLink={newLink}
+              setNewLink={setNewLink}
+              handleAddLink={handleAddLink}
+            />
+          )}
         </div>
       ) : (
         !loading && (
@@ -232,6 +232,7 @@ function AddNewVideo({ newLink, setNewLink, handleAddLink }) {
       <hr />
       <input
         type="text"
+        id="new-video"
         placeholder="Enter YouTube link"
         value={newLink}
         onChange={(e) => setNewLink(e.target.value)}

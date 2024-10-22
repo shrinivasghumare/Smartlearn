@@ -6,16 +6,16 @@ import LayoutContext from "../../context/LayoutContext";
 import Image from "next/image";
 import logo from "../../assets/vidyagram_logo.png";
 import "./styles.css";
+const navLinks = [
+  { href: "/", text: "Home" },
+  { href: "/videos", text: "Videos" },
+  { href: "/quizzes", text: "Quizzes" },
+  { href: "/notes", text: "Notes" },
+  { href: "/assignments", text: "Assignments" },
+];
 const NavBar = () => {
   const { router, user } = useContext(LayoutContext);
   const pathName = usePathname();
-  const navLinks = [
-    { href: "/", text: "Home" },
-    { href: "/videos", text: "Videos" },
-    { href: "/quizzes", text: "Quizzes" },
-    { href: "/notes", text: "Notes" },
-    { href: "/assignments", text: "Assignments" },
-  ];
 
   return (
     <>

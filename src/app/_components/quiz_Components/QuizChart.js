@@ -1,5 +1,32 @@
-import { useEffect, useRef, useMemo, useState } from "react";
-import Chart from "chart.js/auto";
+import { useEffect, useRef, useMemo, useState, useCallback } from "react";
+import {
+  Chart,
+  BarController,
+  LineController,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  PointElement,
+  Filler,
+} from "chart.js";
+
+Chart.register(
+  BarController,
+  LineController,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
 
 export default function QuizChart({ quizStats }) {
   const barChartRef = useRef(null);
@@ -7,10 +34,10 @@ export default function QuizChart({ quizStats }) {
   const subjectChartRef = useRef(null);
   const multiLineChartRef = useRef(null);
 
-  let barChartInstance = useRef(null);
-  let lineChartInstance = useRef(null);
-  let subjectChartInstance = useRef(null);
-  let multiLineChartInstance = useRef(null);
+  const barChartInstance = useRef(null);
+  const lineChartInstance = useRef(null);
+  const subjectChartInstance = useRef(null);
+  const multiLineChartInstance = useRef(null);
 
   const [chartWidth, setChartWidth] = useState(0);
 
@@ -27,7 +54,6 @@ export default function QuizChart({ quizStats }) {
         ...new Set(userQuizData.map((quiz) => quiz.subject)),
       ];
 
-      // Average score by subject
       const subjectAvgScores = subjectNames.map((subject) => {
         const subjectQuizzes = userQuizData.filter(
           (quiz) => quiz.subject === subject
@@ -39,14 +65,12 @@ export default function QuizChart({ quizStats }) {
         return totalScore / subjectQuizzes.length;
       });
 
-      // Multi-line chart for all users' scores over time
       const allUsersScores = allQuizData.reduce((acc, quiz) => {
         if (!acc[quiz.roll_no]) acc[quiz.roll_no] = [];
         acc[quiz.roll_no].push(quiz.score);
         return acc;
       }, {});
 
-      // Multi-line chart for all users' scores over time
       const multiLineDatasets = Object.keys(allUsersScores).map((rollNo) => ({
         label: `Roll No. ${rollNo}`,
         data: allUsersScores[rollNo],
@@ -70,16 +94,35 @@ export default function QuizChart({ quizStats }) {
   useEffect(() => {
     const updateChartWidth = () => {
       if (window.innerWidth < 768) {
-        setChartWidth(window.innerWidth * 0.9); // 90% width on mobile
+        setChartWidth(window.innerWidth * 0.9);
       } else {
-        setChartWidth(window.innerWidth * 0.6); // 60% width on desktop/laptops
+        setChartWidth(window.innerWidth * 0.6);
       }
     };
 
     updateChartWidth();
-    window.addEventListener("resize", updateChartWidth);
 
-    return () => window.removeEventListener("resize", updateChartWidth);
+    const resizeListener = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(updateChartWidth, 200);
+    };
+
+    let resizeTimeout = null;
+    window.addEventListener("resize", resizeListener);
+
+    return () => {
+      window.removeEventListener("resize", resizeListener);
+      clearTimeout(resizeTimeout);
+    };
+  }, []);
+
+  // Memoize the chart destruction function
+  const destroyPrevInstance = useCallback(() => {
+    if (barChartInstance.current) barChartInstance.current.destroy();
+    if (lineChartInstance.current) lineChartInstance.current.destroy();
+    if (subjectChartInstance.current) subjectChartInstance.current.destroy();
+    if (multiLineChartInstance.current)
+      multiLineChartInstance.current.destroy();
   }, []);
 
   useEffect(() => {
@@ -92,14 +135,9 @@ export default function QuizChart({ quizStats }) {
         multiLineDatasets,
       } = memoizedData;
 
-      destroyPrevInstance(
-        barChartInstance,
-        lineChartInstance,
-        subjectChartInstance,
-        multiLineChartInstance
-      );
+      destroyPrevInstance();
 
-      // Bar chart for score overview
+      // Create Bar chart
       barChartInstance.current = new Chart(barChartRef.current, {
         type: "bar",
         data: {
@@ -137,7 +175,7 @@ export default function QuizChart({ quizStats }) {
         },
       });
 
-      // Line chart for quiz scores over time
+      // Create Line chart
       lineChartInstance.current = new Chart(lineChartRef.current, {
         type: "line",
         data: {
@@ -162,7 +200,7 @@ export default function QuizChart({ quizStats }) {
         },
       });
 
-      // Bar chart for average score by subject
+      // Create Bar chart for average score by subject
       subjectChartInstance.current = new Chart(subjectChartRef.current, {
         type: "bar",
         data: {
@@ -185,6 +223,7 @@ export default function QuizChart({ quizStats }) {
         },
       });
 
+      // Create Multi-line chart
       multiLineChartInstance.current = new Chart(multiLineChartRef.current, {
         type: "line",
         data: {
@@ -202,15 +241,8 @@ export default function QuizChart({ quizStats }) {
       });
     }
 
-    return () => {
-      destroyPrevInstance(
-        barChartInstance,
-        lineChartInstance,
-        subjectChartInstance,
-        multiLineChartInstance
-      );
-    };
-  }, [memoizedData, quizStats, chartWidth]);
+    return () => destroyPrevInstance();
+  }, [memoizedData, quizStats, destroyPrevInstance]);
 
   return (
     <>
@@ -235,15 +267,4 @@ export default function QuizChart({ quizStats }) {
       )}
     </>
   );
-}
-function destroyPrevInstance(
-  barChartInstance,
-  lineChartInstance,
-  subjectChartInstance,
-  multiLineChartInstance
-) {
-  if (barChartInstance.current) barChartInstance.current.destroy();
-  if (lineChartInstance.current) lineChartInstance.current.destroy();
-  if (subjectChartInstance.current) subjectChartInstance.current.destroy();
-  if (multiLineChartInstance.current) multiLineChartInstance.current.destroy();
 }

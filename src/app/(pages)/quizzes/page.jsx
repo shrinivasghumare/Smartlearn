@@ -1,13 +1,26 @@
 "use client";
-import { useState, useEffect, useMemo, useCallback, useContext } from "react";
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useContext,
+  lazy,
+  Suspense,
+} from "react";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { supabase } from "../../_lib/supabaseClient";
 import curriculumData from "./_data/curriculum.json";
 import LayoutContext from "../../context/LayoutContext";
 import ShowQuestions from "../../_components/quiz_Components/ShowQuestions";
 import Results from "../../_components/quiz_Components/Results";
-import QuizStats from "../../_components/quiz_Components/QuizStats";
-import QuizChart from "../../_components/quiz_Components/QuizChart";
+import Loader from "../../_components/Loader";
+const QuizStats = lazy(() =>
+  import("../../_components/quiz_Components/QuizStats")
+);
+const QuizChart = lazy(() =>
+  import("../../_components/quiz_Components/QuizChart")
+);
 const shuffleArray = (array) => {
   const arr = [...array];
   for (let i = arr.length - 1; i > 0; i--) {
@@ -68,7 +81,7 @@ export default function Home() {
     } catch (error) {
       console.error("Error fetching quiz stats:", error);
     }
-  }, [user.roll_no]);
+  }, [user?.roll_no]);
 
   useEffect(() => {
     const semesterList = Object.keys(curriculumData.CS);
@@ -333,6 +346,7 @@ export default function Home() {
               </label>
               <select
                 className="form-select mb-3"
+                id="subject"
                 value={selectedSubject}
                 onChange={(e) => handleSubjectChange(e.target.value)}
                 disabled={!selectedSemester}
@@ -349,7 +363,7 @@ export default function Home() {
 
               {selectedSubject && (
                 <>
-                  <label className="form-label">Modules:</label>
+                  <div className="form-label">Modules:</div>
                   {modules.map((module, index) => (
                     <div className="form-check" key={index}>
                       <input
@@ -398,7 +412,11 @@ export default function Home() {
                 selectedSubject={selectedSubject}
                 selectedModules={selectedModules}
               />
-              {quizStats && <QuizStats quizStats={quizStats} />}
+              {quizStats && (
+                <Suspense fallback={<div className="mt-2">Loading Quiz Stats...</div>}>
+                  <QuizStats quizStats={quizStats} />
+                </Suspense>
+              )}
             </div>
           </div>
         </div>
@@ -406,7 +424,9 @@ export default function Home() {
         <div className="col-md-8 col-lg-9">
           <div className="card shadow-sm p-4">
             {!questions.length ? (
-              <QuizChart quizStats={quizStats} />
+              <Suspense fallback={<Loader />}>
+                <QuizChart quizStats={quizStats} />
+              </Suspense>
             ) : showResults ? (
               <Results
                 score={score}
