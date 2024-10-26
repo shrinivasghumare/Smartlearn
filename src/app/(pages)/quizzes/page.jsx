@@ -1,17 +1,26 @@
 "use client";
-import { useState, useEffect, useMemo, useCallback, useContext, lazy, Suspense } from "react";
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useContext,
+  lazy,
+  Suspense,
+} from "react";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { supabase } from "@lib/supabaseClient";
 import curriculumData from "@data/curriculum.json";
 import LayoutContext from "@context/LayoutContext";
 import { GenerateQuizBtn } from "@quizComponents/Buttons";
+import Link from "next/link";
+import CreateQuiz from "@/app/_components/quiz_Components/CreateQuiz";
 const ShowQuestions = lazy(() => import("@quizComponents/ShowQuestions"));
 const Results = lazy(() => import("@quizComponents/Results"));
 const QuizConfig = lazy(() => import("@quizComponents/QuizConfig"));
 const Loader = lazy(() => import("@components/Loader"));
 const QuizStats = lazy(() => import("@quizComponents/QuizStats"));
 const QuizChart = lazy(() => import("@quizComponents/QuizChart"));
-
 
 const shuffleArray = (array) => {
   const arr = [...array];
@@ -40,7 +49,7 @@ export default function Home() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [pdfSummary, setPdfSummary] = useState("No pdf file provided!");
   const [file, setFile] = useState(null);
-
+  const [showCreateNewQuiz, setShowCreateNewQuiz] = useState(false);
   const fetchQuizStats = useCallback(async () => {
     try {
       const { data, error } = await supabase.from("quiz_data").select("*");
@@ -289,6 +298,19 @@ export default function Home() {
             selectedSubject={selectedSubject}
             selectedModules={selectedModules}
           />
+          <div className="btn-group mt-2">
+            {user?.isAdmin && (
+              <div
+                className="btn btn-outline-dark"
+                onClick={() => setShowCreateNewQuiz((prev) => !prev)}
+              >
+                {showCreateNewQuiz ? "Show Stats" : "Create Quiz "}
+              </div>
+            )}
+            <Link className="btn btn-outline-dark" href="/quizzes/take-quiz">
+              Take Quiz
+            </Link>
+          </div>
           {quizStats && (
             <Suspense fallback={<>Loading Quiz Stats...</>}>
               <QuizStats quizStats={quizStats} />
@@ -299,26 +321,30 @@ export default function Home() {
 
       <div className="col-md-8 col-lg-9">
         <div className="card shadow-sm p-4">
-          {!questions.length ? (
-            <Suspense fallback={<Loader />}>
-              <QuizChart quizStats={quizStats} />
-            </Suspense>
-          ) : showResults ? (
-            <Results
-              score={score}
-              questions={questions}
-              userAnswers={userAnswers}
-            />
-          ) : (
-            <ShowQuestions
-              currentQuestionIndex={currentQuestionIndex}
-              setCurrentQuestionIndex={setCurrentQuestionIndex}
-              handleSubmit={handleSubmit}
-              questions={questions}
-              userAnswers={userAnswers}
-              setUserAnswers={setUserAnswers}
-            />
-          )}
+          <Suspense fallback={<Loader />}>
+            {!questions.length ? (
+              showCreateNewQuiz ? (
+                <CreateQuiz />
+              ) : (
+                <QuizChart quizStats={quizStats} />
+              )
+            ) : showResults ? (
+              <Results
+                score={score}
+                questions={questions}
+                userAnswers={userAnswers}
+              />
+            ) : (
+              <ShowQuestions
+                currentQuestionIndex={currentQuestionIndex}
+                setCurrentQuestionIndex={setCurrentQuestionIndex}
+                handleSubmit={handleSubmit}
+                questions={questions}
+                userAnswers={userAnswers}
+                setUserAnswers={setUserAnswers}
+              />
+            )}
+          </Suspense>
         </div>
       </div>
     </div>
