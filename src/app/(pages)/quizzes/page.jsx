@@ -288,7 +288,7 @@ export default function Home() {
   };
 
   return (
-    <div className="container-fluid mb-5 row mt-4">
+    <div className="container-fluid mb-5 row mt-4 vw-100">
       <div className="col-md-4 col-lg-3">
         <div className="card shadow-sm p-4">
           <QuizConfig {...quizConfigProps} />
