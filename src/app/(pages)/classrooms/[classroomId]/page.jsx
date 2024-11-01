@@ -3,7 +3,10 @@ import { useEffect, useState, useContext, useCallback } from "react";
 import { supabase } from "@/app/_lib/supabaseClient";
 import AnnouncementForm from "@/app/_components/classroom_components/AnnouncementForm";
 import LayoutContext from "@/app/context/LayoutContext";
-
+import {
+  FileIcon,
+  LeaveIcon,
+} from "@/app/_components/classroom_components/icons";
 export default function ClassroomDetails({ params }) {
   const { classroomId } = params;
   const [classroom, setClassroom] = useState(null);
@@ -53,7 +56,7 @@ export default function ClassroomDetails({ params }) {
         .delete()
         .eq("id", announcementId);
       if (error) console.error("Error deleting announcement:", error);
-      else fetchAnnouncements(); // Refresh announcements after deletion
+      else fetchAnnouncements();
     }
   };
 
@@ -68,7 +71,7 @@ export default function ClassroomDetails({ params }) {
         .eq("roll_no", user?.roll_no)
         .eq("classroom_id", classroomId);
       if (error) console.error("Error leaving classroom:", error);
-      else router.push("/assignments"); // Redirect back to the main classroom page
+      else router.push("/classrooms");
     }
   };
 
@@ -79,37 +82,22 @@ export default function ClassroomDetails({ params }) {
       fetchMembers();
     }
   }, [classroomId, fetchClassroom, fetchAnnouncements, fetchMembers]);
+
   return (
     <div className="container my-4">
       {classroom && (
         <>
-          <div className="d-flex justify-content-between mb-4">
-            <h1>{classroom.name}</h1>
-            <div
-              style={{ cursor: "pointer" }}
-              title="Leave"
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <h1 className="display-5">{classroom.name}</h1>
+            <button
+              className="btn btn-outline-danger d-flex align-items-center"
               onClick={leaveClassroom}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                fill="currentColor"
-                viewBox="0 0 16 16"
-                className="bi bi-box-arrow-right"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"
-                />
-                <path
-                  fillRule="evenodd"
-                  d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"
-                />
-              </svg>
-            </div>
+              <LeaveIcon /> Quit
+            </button>
           </div>
-          <p>{classroom.description}</p>
+          <p className="lead">{classroom.description}</p>
+
           <div className="row">
             <div className="col-lg-8">
               {user?.isAdmin && (
@@ -119,37 +107,69 @@ export default function ClassroomDetails({ params }) {
                 />
               )}
               <div className="announcements-list mt-4">
+                <h3 className="mb-3">Announcements</h3>
                 {loading ? (
-                  <p>Loading announcements...</p>
+                  <div className="text-center my-3">
+                    <div className="spinner-border" role="status">
+                      <span className="visually-hidden">Loading...</span>
+                    </div>
+                  </div>
                 ) : announcements.length > 0 ? (
                   announcements.map((announcement) => (
                     <div
                       key={announcement.id}
-                      className="announcement-item position-relative p-3 mb-3 border rounded shadow-sm"
+                      className="card mb-3"
                       onMouseEnter={(e) => {
                         const deleteIcon =
                           e.currentTarget.querySelector(".delete-icon");
-                        if (deleteIcon) deleteIcon.style.display = "block";
+                        if (deleteIcon) deleteIcon.style.opacity = "1";
                       }}
                       onMouseLeave={(e) => {
                         const deleteIcon =
                           e.currentTarget.querySelector(".delete-icon");
-                        if (deleteIcon) deleteIcon.style.display = "none";
+                        if (deleteIcon) deleteIcon.style.opacity = "0";
                       }}
                     >
-                      {user?.isAdmin && (
-                        <span
-                          className="delete-icon position-absolute top-0 end-0 m-2 text-danger"
-                          style={{ cursor: "pointer", display: "none" }}
-                          onClick={() => deleteAnnouncement(announcement.id)}
-                        >
-                          &times;
-                        </span>
-                      )}
-                      <p className="mb-0">{announcement.content}</p>
-                      <small className="text-muted">
-                        {new Date(announcement.created_at).toLocaleString()}
-                      </small>
+                      <div className="card-body position-relative">
+                        {user?.isAdmin && (
+                          <span
+                            className="delete-icon position-absolute top-0 end-0 m-2 text-danger fs-5"
+                            style={{
+                              cursor: "pointer",
+                              opacity: "0",
+                              transition: "opacity 0.3s ease",
+                            }}
+                            onClick={() => deleteAnnouncement(announcement.id)}
+                          >
+                            &times;
+                          </span>
+                        )}
+                        <p className="card-text mb-2 text-dark">
+                          {announcement.content}
+                        </p>
+                        <div className="d-flex justify-content-between">
+                          {announcement.file_url && (
+                            <a
+                              href={
+                                supabase.storage
+                                  .from("materials")
+                                  .getPublicUrl(announcement.file_url).data
+                                  .publicUrl
+                              }
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-primary text-decoration-none d-flex align-items-center"
+                            >
+                              <FileIcon />
+                              View Attachment
+                            </a>
+                          )}
+
+                          <small className="text-muted d-block mb-2">
+                            {new Date(announcement.created_at).toGMTString()}
+                          </small>
+                        </div>
+                      </div>
                     </div>
                   ))
                 ) : (

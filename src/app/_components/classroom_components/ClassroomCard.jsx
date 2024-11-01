@@ -6,7 +6,7 @@ const ClassroomCard = memo(({ classroom }) => {
 
   return (
     <div
-      className="card mb-3 shadow-sm p-3 classroom-card"
+      className="card shadow-sm p-3 classroom-card"
       style={{ cursor: "pointer" }}
       onClick={() => router.push(`/classrooms/${classroom.id}`)}
     >

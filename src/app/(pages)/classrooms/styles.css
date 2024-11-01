@@ -1,0 +1,6 @@
+.classroomCard {
+  transition: all 0.2s ease;
+}
+.classroomCard:hover {
+  scale: 1.05;
+}
