@@ -11,7 +11,7 @@ const navLinks = [
   { href: "/videos", text: "Videos" },
   { href: "/quizzes", text: "Quizzes" },
   { href: "/notes", text: "Notes" },
-  { href: "/assignments", text: "Assignments" },
+  { href: "/classrooms", text: "Classroom" },
 ];
 const NavBar = () => {
   const { router, user, setUser } = useContext(LayoutContext);

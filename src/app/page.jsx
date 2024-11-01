@@ -9,7 +9,7 @@ export default function Home() {
     { href: "/videos", text: "Videos" },
     { href: "/quizzes", text: "Quizzes" },
     { href: "/notes", text: "Notes" },
-    { href: "/assignments", text: "Assignments" },
+    { href: "/classrooms", text: "Classroom" },
   ];
 
   return (
