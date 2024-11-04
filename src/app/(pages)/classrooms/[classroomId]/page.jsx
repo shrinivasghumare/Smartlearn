@@ -3,6 +3,7 @@ import { useEffect, useState, useContext, useCallback } from "react";
 import { supabase } from "@/app/_lib/supabaseClient";
 import AnnouncementForm from "@/app/_components/classroom_components/AnnouncementForm";
 import LayoutContext from "@/app/context/LayoutContext";
+import Link from "next/link";
 import {
   FileIcon,
   LeaveIcon,
@@ -14,6 +15,54 @@ export default function ClassroomDetails({ params }) {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const { user, router } = useContext(LayoutContext);
+  const [assignments, setAssignments] = useState(null);
+
+  const fetchAssignments = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("assignments")
+      .select("*")
+      .eq("classroom_id", classroomId)
+      .order("created_at", { ascending: false });
+    if (error) console.log(error);
+
+    if (user && data) {
+      // Check if the user is admin to fetch submission counts for each assignment
+      if (user?.isAdmin) {
+        const assignmentData = await Promise.all(
+          data.map(async (assignment) => {
+            const {
+              count,
+              error: countError,
+            } = await supabase
+              .from("student_submissions")
+              .select("*", { count: "exact" })
+              .eq("assignment_id", assignment.id);
+            if (countError) console.error(countError);
+            return { ...assignment, submissionCount: count || 0 };
+          })
+        );
+        setAssignments(assignmentData);
+      } else {
+        // If the user is a student, check their grade for each assignment
+        const assignmentData = await Promise.all(
+          data.map(async (assignment) => {
+            const { data: submission, error: submissionError } = await supabase
+              .from("student_submissions")
+              .select("grade")
+              .eq("assignment_id", assignment.id)
+              .eq("student_id", user?.roll_no)
+              .single(); // Single submission for a student
+            if (submissionError) console.error(submissionError);
+            return {
+              ...assignment,
+              grade: submission?.grade,
+            };
+          })
+        );
+        setAssignments(assignmentData);
+      }
+    }
+  }, [classroomId, user]);
 
   const fetchClassroom = useCallback(async () => {
     const { data, error } = await supabase
@@ -35,7 +84,8 @@ export default function ClassroomDetails({ params }) {
     if (error) console.log(error);
     else setAnnouncements(data);
     setLoading(false);
-  }, [classroomId]);
+    fetchAssignments();
+  }, [classroomId, fetchAssignments]);
 
   const fetchMembers = useCallback(async () => {
     const { data, error } = await supabase
@@ -80,8 +130,15 @@ export default function ClassroomDetails({ params }) {
       fetchClassroom();
       fetchAnnouncements();
       fetchMembers();
+      fetchAssignments();
     }
-  }, [classroomId, fetchClassroom, fetchAnnouncements, fetchMembers]);
+  }, [
+    classroomId,
+    fetchClassroom,
+    fetchAnnouncements,
+    fetchMembers,
+    fetchAssignments,
+  ]);
 
   return (
     <div className="container my-4">
@@ -194,6 +251,54 @@ export default function ClassroomDetails({ params }) {
                 <p className="text-muted">
                   No members have joined this classroom yet.
                 </p>
+              )}
+            </div>
+
+            <div className="assignments-list mt-4">
+              <h3 className="mb-3">Assignments</h3>
+              {assignments?.length > 0 ? (
+                assignments.map((assignment) => (
+                  <div key={assignment.id} className="card mb-3">
+                    <div className="card-body">
+                      <Link
+                        href={`/classrooms/${classroomId}/assignments/${assignment.id}`}
+                        className="text-dark text-decoration-none"
+                      >
+                        <h5 className="card-title">{assignment.content}</h5>
+                      </Link>
+                      <p>Total Score: {assignment.total_score}</p>
+                      {user?.isAdmin ? (
+                        <p>
+                          Submissions: {assignment.submissionCount} students
+                        </p>
+                      ) : (
+                        <p>
+                          {assignment.grade === null
+                            ? "Not graded!"
+                            : assignment.grade === undefined
+                            ? "No Submissions done yet!"
+                            : `Grade: ${assignment.grade} / ${assignment.total_score}`}
+                        </p>
+                      )}
+                      {assignment.file_url && (
+                        <a
+                          href={
+                            supabase.storage
+                              .from(`assignments/${classroom.id}`)
+                              .getPublicUrl(assignment.file_url).data.publicUrl
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary text-decoration-none d-flex align-items-center"
+                        >
+                          <FileIcon /> View Attachment
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-muted">No assignments yet.</p>
               )}
             </div>
           </div>
