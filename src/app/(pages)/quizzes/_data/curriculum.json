@@ -6,6 +6,12 @@
           "code": "CSC701",
           "name": "Machine Learning",
           "credits": 3,
+          "course_outcomes": [
+            "To acquire fundamental knowledge of developing machine learning models.",
+            "To select, apply and evaluate an appropriate machine learning model for the given",
+            "To demonstrate ensemble techniques to combine predictions from different models.",
+            "To demonstrate the dimensionality reduction techniques."
+          ],
           "modules": [
             {
               "name": "Introduction to Machine Learning",

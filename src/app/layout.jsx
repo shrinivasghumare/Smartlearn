@@ -22,7 +22,7 @@ const RootLayout = ({ children }) => {
     Checkuser();
   }, [router, pathName]);
 
-  const Layoutprops = { user, setUser, router};
+  const Layoutprops = { user, setUser, router };
 
   return (
     <LayoutContext.Provider value={Layoutprops}>
@@ -37,6 +37,10 @@ const RootLayout = ({ children }) => {
           <link
             rel="stylesheet"
             href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.3.136/pdf_viewer.min.css"
+          />
+          <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css"
           />
           <title>Vidyagram</title>
         </head>

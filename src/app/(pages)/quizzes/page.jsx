@@ -96,6 +96,8 @@ export default function Home() {
       (subjectKey) => ({
         name: curriculumData.CS[semester].courses[subjectKey].name,
         modules: curriculumData.CS[semester].courses[subjectKey].modules,
+        course_outcomes:
+          curriculumData.CS[semester].courses[subjectKey].course_outcomes,
       })
     );
     setSubjects(subjectList);
@@ -106,8 +108,8 @@ export default function Home() {
   };
 
   const handleSubjectChange = (subject) => {
-    setSelectedSubject(subject);
     const foundSubject = subjects.find((subj) => subj.name === subject);
+    setSelectedSubject(foundSubject);
     setModules(foundSubject ? foundSubject.modules : []);
     setSelectedModules([]); // Clear selected modules
     setIsAllChecked(false); // Reset "Check All" state
@@ -167,6 +169,7 @@ export default function Home() {
       .flatMap((mod) => mod.topics)
       .join(", ");
 
+    // console.log({ selectedModules });
     handlePDFSubmit();
 
     const prompt = `
@@ -183,11 +186,17 @@ export default function Home() {
         "topic": "{a short topic description}",
         "fromNotes": true | false
         "fromPDF": true | false
+        "bloom_taxonomy": Generate a Bloom's Taxonomy level-based categorization choices:( Remember, Understand, Apply, Analyze, Evaluate, Create )
+        "course_outcomes": match one of the outcomes which matches the question, return null if no course outcomes provided.
       }
     ]
     Modules: ${selectedModules.map((mod) => mod.name).join(", ")}
     Topics: ${selectedTopics}
     Notes: {${professorNotes ? professorNotes : "No notes provided"}}
+    course outcomes: ${
+      selectedSubject?.course_outcomes?.map((co) => co).join(",") ||
+      "No course outcome provided"
+    }
     PDF content: ${pdfSummary}
     Number of questions required: ${NumberOfQuestions}
     `;
@@ -226,7 +235,13 @@ export default function Home() {
       setUserAnswers({});
       setLoading(false);
     }
-  }, [selectedModules, professorNotes, pdfSummary, handlePDFSubmit]);
+  }, [
+    selectedModules,
+    professorNotes,
+    pdfSummary,
+    handlePDFSubmit,
+    selectedSubject.course_outcomes,
+  ]);
 
   const score = useMemo(() => {
     const correctAnswers = questions.map((q) => q.correct_answer);
@@ -253,7 +268,7 @@ export default function Home() {
           numberOfQuestions: NumberOfQuestions,
           questions: [...questions],
           userAnswers: userAnswers,
-          subject: selectedSubject,
+          subject: selectedSubject.name,
           semester: selectedSemester,
           score: score,
           roll_no: user.roll_no,

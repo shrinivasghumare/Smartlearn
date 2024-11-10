@@ -53,7 +53,7 @@ export default function QuizConfig({
         <select
           className="form-select mb-3"
           id="subject"
-          value={selectedSubject}
+          value={selectedSubject.name || ""}
           onChange={(e) => handleSubjectChange(e.target.value)}
           disabled={!selectedSemester}
         >
