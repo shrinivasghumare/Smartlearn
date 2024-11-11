@@ -49,6 +49,9 @@ export default function Home() {
   const [pdfSummary, setPdfSummary] = useState("No pdf file provided!");
   const [file, setFile] = useState(null);
   const [showCreateNewQuiz, setShowCreateNewQuiz] = useState(false);
+  const [showTopicInput, setShowTopicInput] = useState(false);
+  const [customTopics, setCustomTopics] = useState("");
+
   const fetchQuizStats = useCallback(async () => {
     try {
       const { data, error } = await supabase.from("quiz_data").select("*");
@@ -95,7 +98,6 @@ export default function Home() {
           ...new Set(data.map((entry) => entry.semester)),
         ];
         setSemesters(uniqueSemesters);
-        console.log(uniqueSemesters);
       } catch (error) {
         console.error("Error fetching semesters:", error);
       }
@@ -287,6 +289,63 @@ export default function Home() {
     selectedSubject.course_outcomes,
   ]);
 
+  const handleGenerateFromTopic = async () => {
+    if (!customTopics) {
+      alert("Please enter at least one topic.");
+      return;
+    }
+
+    const prompt = `
+     Generate multiple-choice questions (MCQs) based on the following topics. Each question should include one correct answer and three incorrect answers. The output should be formatted as JSON, containing the following fields:
+    [
+      {
+        "difficulty": "Easy" | "Medium" | "Hard", 
+        "question": "{the question text}",
+        "correct_answer": "{the correct answer}",
+        "incorrect_answers": ["{incorrect answer 1}", "{incorrect answer 2}", "{incorrect answer 3}"],
+        "explanation": "{a brief explanation about the correct answer}",
+        "topic": "{a short topic description}",
+        "bloom_taxonomy": Generate a Bloom's Taxonomy level-based categorization choices:( Remember, Understand, Apply, Analyze, Evaluate, Create ) also consider the difficulty of the problem according to the bloom's taxonomy ("create" being the hardest and "remember" is the lowest )
+      }
+    ]
+    Topics: ${customTopics}
+    Number of questions required: ${NumberOfQuestions}
+    `;
+    try {
+      setLoading(true);
+      setShowResults(false);
+      const genAI = new GoogleGenerativeAI(
+        process.env.NEXT_PUBLIC_GEMINI_API_KEY
+      );
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const result = await model.generateContent(prompt);
+      const parsedData = JSON.parse(
+        result.response.text().replace(/```json\n|\\n|```/g, "")
+      );
+      setQuestions(
+        shuffleArray(
+          parsedData.map((question) => ({
+            ...question,
+            options: shuffleArray([
+              question.correct_answer,
+              ...question.incorrect_answers,
+            ]),
+          }))
+        )
+      );
+    } catch (error) {
+      console.error("Error fetching questions from custom topics:", error);
+      alert(
+        "There was an error generating the quiz from your topics. Please try again later."
+      );
+    } finally {
+      setCurrentQuestionIndex(0);
+      setUserAnswers({});
+      setLoading(false);
+      setShowTopicInput(false);
+    }
+  };
+
   const score = useMemo(() => {
     const correctAnswers = questions.map((q) => q.correct_answer);
     return Object.values(userAnswers).filter(
@@ -370,10 +429,59 @@ export default function Home() {
               Take Quiz
             </Link>
           </div>
+          <div
+            className="btn btn-outline-dark"
+            onClick={() => setShowTopicInput(true)}
+          >
+            Generate from your own topic
+          </div>
           {quizStats && (
             <Suspense fallback={<>Loading Quiz Stats...</>}>
               <QuizStats quizStats={quizStats} />
             </Suspense>
+          )}
+          {showTopicInput && (
+            <div className="modal show" style={{ display: "block" }}>
+              <div className="modal-dialog">
+                <div className="modal-content">
+                  <div className="modal-header">
+                    <h5 className="modal-title">
+                      Enter Topics (comma separated)
+                    </h5>
+                    <button
+                      type="button"
+                      className="btn-close"
+                      onClick={() => setShowTopicInput(false)}
+                    />
+                  </div>
+                  <div className="modal-body">
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={customTopics}
+                      onChange={(e) => setCustomTopics(e.target.value)}
+                      placeholder="e.g., Quantum Physics, Thermodynamics"
+                    />
+                  </div>
+                  <div className="modal-footer">
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => setShowTopicInput(false)}
+                    >
+                      Close
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={handleGenerateFromTopic}
+                    >
+                      Generate Questions
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </div>
