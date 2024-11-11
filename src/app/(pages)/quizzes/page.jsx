@@ -10,7 +10,6 @@ import {
 } from "react";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { supabase } from "@lib/supabaseClient";
-import curriculumData from "@data/curriculum.json";
 import LayoutContext from "@context/LayoutContext";
 import { GenerateQuizBtn } from "@quizComponents/Buttons";
 import Link from "next/link";
@@ -85,39 +84,70 @@ export default function Home() {
   }, [user?.roll_no]);
 
   useEffect(() => {
-    const semesterList = Object.keys(curriculumData.CS);
-    setSemesters(semesterList);
-    if (user) fetchQuizStats();
+    const fetchSemesters = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("courses")
+          .select("semester")
+          .order("semester", { ascending: true });
+        if (error) throw error;
+        const uniqueSemesters = [
+          ...new Set(data.map((entry) => entry.semester)),
+        ];
+        setSemesters(uniqueSemesters);
+        console.log(uniqueSemesters);
+      } catch (error) {
+        console.error("Error fetching semesters:", error);
+      }
+    };
+
+    if (user) {
+      fetchSemesters();
+      fetchQuizStats();
+    }
   }, [user, fetchQuizStats]);
 
-  const handleSemesterChange = (semester) => {
+  const handleSemesterChange = async (semester) => {
     setSelectedSemester(semester);
-    const subjectList = Object.keys(curriculumData.CS[semester].courses).map(
-      (subjectKey) => ({
-        name: curriculumData.CS[semester].courses[subjectKey].name,
-        modules: curriculumData.CS[semester].courses[subjectKey].modules,
-        course_outcomes:
-          curriculumData.CS[semester].courses[subjectKey].course_outcomes,
-      })
-    );
-    setSubjects(subjectList);
+    try {
+      const { data, error } = await supabase
+        .from("courses")
+        .select("id, course_name, course_outcomes")
+        .eq("semester", semester);
+      if (error) throw error;
+
+      const subjects = data.map((subject) => ({
+        id: subject.id,
+        name: subject.course_name,
+        modules: [], // Will be filled on subject select
+        course_outcomes: subject.course_outcomes,
+      }));
+      setSubjects(subjects);
+    } catch (error) {
+      console.error("Error fetching subjects:", error);
+    }
+
     setSelectedSubject(""); // Clear selected subject
     setModules([]); // Clear modules
     setSelectedModules([]); // Clear selected modules
     setIsAllChecked(false); // Reset check/uncheck state
   };
 
-  const handleSubjectChange = (subject) => {
-    const foundSubject = subjects.find((subj) => subj.name === subject);
-    setSelectedSubject(foundSubject);
-    setModules(foundSubject ? foundSubject.modules : []);
+  const handleSubjectChange = async (subject) => {
+    setSelectedSubject(subject);
+    try {
+      const { data, error } = await supabase
+        .from("modules")
+        .select("id, module_name")
+        .eq("course_id", subject.id);
+      if (error) throw error;
+
+      setModules(data);
+    } catch (error) {
+      console.error("Error fetching modules:", error);
+    }
     setSelectedModules([]); // Clear selected modules
     setIsAllChecked(false); // Reset "Check All" state
-
-    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-    checkboxes.forEach((checkbox) => {
-      checkbox.checked = false;
-    });
   };
 
   const handlePDFSubmit = useCallback(async () => {
@@ -165,11 +195,25 @@ export default function Home() {
       alert("Please select at least one module.");
       return;
     }
-    const selectedTopics = selectedModules
-      .flatMap((mod) => mod.topics)
+
+    const { data: topicsData, error } = await supabase
+      .from("topics")
+      .select("topic_content")
+      .in(
+        "module_id",
+        selectedModules.map((mod) => mod.id)
+      ); // Fetch topics by module IDs
+
+    if (error) {
+      console.error("Error fetching topics:", error);
+      setLoading(false);
+      return;
+    }
+
+    const selectedTopics = topicsData
+      .map((topic) => topic.topic_content)
       .join(", ");
 
-    // console.log({ selectedModules });
     handlePDFSubmit();
 
     const prompt = `
@@ -186,11 +230,11 @@ export default function Home() {
         "topic": "{a short topic description}",
         "fromNotes": true | false
         "fromPDF": true | false
-        "bloom_taxonomy": Generate a Bloom's Taxonomy level-based categorization choices:( Remember, Understand, Apply, Analyze, Evaluate, Create )
+        "bloom_taxonomy": Generate a Bloom's Taxonomy level-based categorization choices:( Remember, Understand, Apply, Analyze, Evaluate, Create ) also consider the difficulty of the problem according to the bloom's taxonomy ("create" being the hardest and "remember" is the lowest )
         "course_outcomes": match one of the outcomes which matches the question, return null if no course outcomes provided.
       }
     ]
-    Modules: ${selectedModules.map((mod) => mod.name).join(", ")}
+    Modules: ${selectedModules.map((mod) => mod.module_name).join(", ")}
     Topics: ${selectedTopics}
     Notes: {${professorNotes ? professorNotes : "No notes provided"}}
     course outcomes: ${
@@ -200,7 +244,7 @@ export default function Home() {
     PDF content: ${pdfSummary}
     Number of questions required: ${NumberOfQuestions}
     `;
-    // console.log(prompt);
+    console.log(prompt);
     try {
       setLoading(true);
       setShowResults(false);
@@ -216,7 +260,7 @@ export default function Home() {
         .replace(/```/g, "");
 
       const parsedData = JSON.parse(cleanedText);
-      // console.log(parsedData);
+      console.log(parsedData);
       const shuffledQuestions = shuffleArray(parsedData);
 
       const questionsWithShuffledOptions = shuffledQuestions.map((question) => {

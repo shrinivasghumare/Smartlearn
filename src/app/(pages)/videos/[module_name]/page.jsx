@@ -26,7 +26,7 @@ export default function Module({ params }) {
         setLoading(true);
 
         const { data, error } = await supabase
-          .from("modules")
+          .from("video_modules")
           .select("module_link")
           .eq("module_name", moduleName)
           .single();
@@ -69,7 +69,7 @@ export default function Module({ params }) {
     try {
       // Check if the module exists in the database
       const { data, error } = await supabase
-        .from("modules")
+        .from("video_modules")
         .select("module_link")
         .eq("module_name", module_name);
 
@@ -81,7 +81,7 @@ export default function Module({ params }) {
       // If the module doesn't exist (returns an empty array), insert a new one
       if (data.length === 0) {
         const { data: insertData, error: insertError } = await supabase
-          .from("modules")
+          .from("video_modules")
           .insert([{ module_name: module_name, module_link: [newLink] }])
           .select();
 
@@ -99,7 +99,7 @@ export default function Module({ params }) {
         // If the module exists, update the links array with the new link
         const updatedLinks = [...data[0].module_link, newLink];
         const { data: updateData, error: updateError } = await supabase
-          .from("modules")
+          .from("video_modules")
           .update({ module_link: updatedLinks })
           .eq("module_name", module_name)
           .select();

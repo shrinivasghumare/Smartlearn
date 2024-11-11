@@ -54,7 +54,12 @@ export default function QuizConfig({
           className="form-select mb-3"
           id="subject"
           value={selectedSubject.name || ""}
-          onChange={(e) => handleSubjectChange(e.target.value)}
+          onChange={(e) => {
+            const foundSubject = subjects.find(
+              (sub) => sub.name == e.target.value
+            );
+            handleSubjectChange(foundSubject);
+          }}
           disabled={!selectedSemester}
         >
           <option value="" disabled>
@@ -75,7 +80,7 @@ export default function QuizConfig({
                 <input
                   className="form-check-input"
                   type="checkbox"
-                  value={module.name}
+                  value={module.module_name}
                   checked={selectedModules.includes(module)}
                   onChange={() => handleModuleChange(module)}
                   id={`module-${index}`}
@@ -84,7 +89,7 @@ export default function QuizConfig({
                   className="form-check-label w-100 text-truncate"
                   htmlFor={`module-${index}`}
                 >
-                  {module.name}
+                  {module.module_name}
                 </label>
               </div>
             ))}
