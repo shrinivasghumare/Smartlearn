@@ -51,6 +51,7 @@ export default function Home() {
   const [showCreateNewQuiz, setShowCreateNewQuiz] = useState(false);
   const [showTopicInput, setShowTopicInput] = useState(false);
   const [customTopics, setCustomTopics] = useState("");
+  const [loadingCustomTopics, setLoadingCustomTopics] = useState(false);
 
   const fetchQuizStats = useCallback(async () => {
     try {
@@ -289,12 +290,12 @@ export default function Home() {
     selectedSubject.course_outcomes,
   ]);
 
-  const handleGenerateFromTopic = async () => {
+  const handleGenerateFromTopic = useCallback(async () => {
     if (!customTopics) {
       alert("Please enter at least one topic.");
       return;
     }
-
+    setLoadingCustomTopics(true);
     const prompt = `
      Generate multiple-choice questions (MCQs) based on the following topics. Each question should include one correct answer and three incorrect answers. The output should be formatted as JSON, containing the following fields:
     [
@@ -343,8 +344,9 @@ export default function Home() {
       setUserAnswers({});
       setLoading(false);
       setShowTopicInput(false);
+      setLoadingCustomTopics(false);
     }
-  };
+  }, [customTopics]);
 
   const score = useMemo(() => {
     const correctAnswers = questions.map((q) => q.correct_answer);
@@ -474,9 +476,12 @@ export default function Home() {
                     <button
                       type="button"
                       className="btn btn-primary"
+                      disabled={!customTopics || loadingCustomTopics}
                       onClick={handleGenerateFromTopic}
                     >
-                      Generate Questions
+                      {loadingCustomTopics
+                        ? "Loading..."
+                        : "Generate Questions"}
                     </button>
                   </div>
                 </div>
