@@ -1,4 +1,5 @@
-export default function QuizStats({quizStats}) {
+import React from "react";
+const QuizStats = ({ quizStats }) => {
   return (
     <div className="card mt-3 p-3">
       <h5>Quiz Stats</h5>
@@ -23,5 +24,6 @@ export default function QuizStats({quizStats}) {
         </tbody>
       </table>
     </div>
-  )
-}
+  );
+};
+export default React.memo(QuizStats);

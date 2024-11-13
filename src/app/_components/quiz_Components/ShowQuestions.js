@@ -63,7 +63,7 @@ export default function ShowQuestions({
             data-bs-toggle="tooltip"
             title={questions[currentQuestionIndex]?.course_outcomes}
           >
-            CO
+            {questions[currentQuestionIndex].CO}
           </span>
         )}
       </p>

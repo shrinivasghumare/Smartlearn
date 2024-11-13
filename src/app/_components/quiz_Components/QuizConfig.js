@@ -25,7 +25,7 @@ export default function QuizConfig({
   };
   return (
     <div>
-      <h4 className="text-center">Configure Quiz</h4>
+      <h4 className="text-center mt-3">Configure Quiz</h4>
       <hr />
       <div>
         <label htmlFor="semester" className="form-label">

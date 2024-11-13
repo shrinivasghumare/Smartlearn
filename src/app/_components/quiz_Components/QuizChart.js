@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo, useState, useCallback } from "react";
+import { useEffect, useRef, useMemo, useState, useCallback,memo } from "react";
 import {
   Chart,
   BarController,
@@ -28,7 +28,7 @@ Chart.register(
   Filler
 );
 
-export default function QuizChart({ quizStats }) {
+const QuizChart =({ quizStats })=> {
   const barChartRef = useRef(null);
   const lineChartRef = useRef(null);
   const subjectChartRef = useRef(null);
@@ -268,3 +268,4 @@ export default function QuizChart({ quizStats }) {
     </>
   );
 }
+export default memo(QuizChart);

@@ -14,6 +14,7 @@ import LayoutContext from "@context/LayoutContext";
 import { GenerateQuizBtn } from "@quizComponents/Buttons";
 import Link from "next/link";
 import CreateQuiz from "@/app/_components/quiz_Components/CreateQuiz";
+import COChart from "@/app/_components/quiz_Components/COChart";
 const ShowQuestions = lazy(() => import("@quizComponents/ShowQuestions"));
 const Results = lazy(() => import("@quizComponents/Results"));
 const QuizConfig = lazy(() => import("@quizComponents/QuizConfig"));
@@ -220,34 +221,39 @@ export default function Home() {
     handlePDFSubmit();
 
     const prompt = `
-    Generate multiple-choice questions (MCQs) based on the following modules, notes, and topics. Each question should include one correct answer and three incorrect answers. The output should be formatted as JSON, containing the following fields:
-    [
-      {
-        "type": "multiple" | "true or false", 
-        "difficulty": "Easy" | "Medium" | "Hard", 
-        "category": "{subject name}",
-        "question": "{the question text}",
-        "correct_answer": "{the correct answer}",
-        "incorrect_answers": ["{incorrect answer 1}", "{incorrect answer 2}", "{incorrect answer 3}"],
-        "explanation": "{a brief explanation about the correct answer}",
-        "topic": "{a short topic description}",
-        "fromNotes": true | false
-        "fromPDF": true | false
-        "bloom_taxonomy": Generate a Bloom's Taxonomy level-based categorization choices:( Remember, Understand, Apply, Analyze, Evaluate, Create ) also consider the difficulty of the problem according to the bloom's taxonomy ("create" being the hardest and "remember" is the lowest )
-        "course_outcomes": match one of the outcomes which matches the question, return null if no course outcomes provided.
-      }
-    ]
-    Modules: ${selectedModules.map((mod) => mod.module_name).join(", ")}
-    Topics: ${selectedTopics}
-    Notes: {${professorNotes ? professorNotes : "No notes provided"}}
-    course outcomes: ${
-      selectedSubject?.course_outcomes?.map((co) => co).join(",") ||
-      "No course outcome provided"
+  Generate multiple-choice questions (MCQs) in JSON format based on the provided modules, notes, topics, and course outcomes. Each question should include one correct answer and three incorrect answers, structured as follows:
+  [
+    {
+      "difficulty": "Easy" | "Medium" | "Hard",
+      "category": "{subject name}",
+      "question": "{question text}",
+      "correct_answer": "{correct answer}",
+      "incorrect_answers": ["{incorrect answer 1}", "{incorrect answer 2}", "{incorrect answer 3}"],
+      "explanation": "{brief explanation of the correct answer}",
+      "topic": "{related topic}",
+      "fromNotes": true | false,
+      "fromPDF": true | false,
+      "bloom_taxonomy": "Remember" | "Understand" | "Apply" | "Analyze" | "Evaluate" | "Create", // Select based on question difficulty and taxonomy level (Create is hardest, Remember is easiest)
+      "course_outcomes": "{matching course outcome, or null if none provided}",
+      "CO": "CO1" | "CO2" | "CO3" | "CO4" | "CO5" | "CO6" // Select the relevant course outcome number
     }
-    PDF content: ${pdfSummary}
-    Number of questions required: ${NumberOfQuestions}
-    `;
-    console.log(prompt);
+  ]
+  Modules to base questions on: ${selectedModules
+    .map((mod) => mod.module_name)
+    .join(", ")}
+  Topics to consider: ${selectedTopics}
+  Notes provided by the professor: ${
+    professorNotes ? professorNotes : "No notes provided"
+  }
+  Course outcomes available: ${
+    selectedSubject?.course_outcomes?.map((co) => co).join(", ") ||
+    "No course outcomes provided"
+  }
+  PDF content summary: ${pdfSummary}
+  Number of questions to generate: ${NumberOfQuestions}
+`;
+
+    // console.log(prompt);
     try {
       setLoading(true);
       setShowResults(false);
@@ -263,7 +269,7 @@ export default function Home() {
         .replace(/```/g, "");
 
       const parsedData = JSON.parse(cleanedText);
-      console.log(parsedData);
+      // console.log(parsedData);
       const shuffledQuestions = shuffleArray(parsedData);
 
       const questionsWithShuffledOptions = shuffledQuestions.map((question) => {
@@ -411,6 +417,7 @@ export default function Home() {
     <div className="container-fluid mb-5 row mt-4 ">
       <div className="col-md-4 col-lg-3">
         <div className="card shadow-sm p-4">
+          {questions?.length > 0 && <COChart questions={questions} />}
           <QuizConfig {...quizConfigProps} />
           <GenerateQuizBtn
             getResult={getResult}
