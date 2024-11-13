@@ -3,6 +3,7 @@ export function ToggleCheckBtn({
   isAllChecked,
   setSelectedModules,
   setIsAllChecked,
+  loadingModules,
 }) {
   const toggleCheckAll = () => {
     if (isAllChecked) {
@@ -24,6 +25,7 @@ export function ToggleCheckBtn({
     <button
       className="mt-2 btn btn-sm btn-outline-dark w-100"
       onClick={toggleCheckAll}
+      disabled={loadingModules}
     >
       {isAllChecked ? "Uncheck All" : "Check All"}
     </button>

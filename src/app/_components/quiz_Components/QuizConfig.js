@@ -20,6 +20,8 @@ export default function QuizConfig({
   user,
   showCreateNewQuiz,
   setShowTopicInput,
+  loadingSubjects,
+  loadingModules,
 }) {
   const handleModuleChange = (module) => {
     const isSelected = selectedModules.includes(module);
@@ -30,17 +32,17 @@ export default function QuizConfig({
     }
   };
   return (
-    <div>
-      <h4 className="text-center mt-3">Configure Quiz</h4>
-      <hr />
-      <div className="d-flex flex-column">
+    <div className="p-4 border rounded shadow-sm">
+      <h4 className="text-center mb-4">Configure Quiz</h4>
+
+      <div className="mb-3">
         <label htmlFor="semester" className="form-label">
           Semester:
         </label>
         <select
-          className="form-select mb-3"
-          value={selectedSemester}
+          className="form-select"
           id="semester"
+          value={selectedSemester}
           onChange={(e) => handleSemesterChange(e.target.value)}
         >
           <option value="" disabled>
@@ -52,104 +54,138 @@ export default function QuizConfig({
             </option>
           ))}
         </select>
+      </div>
 
+      <div className="mb-3">
         <label htmlFor="subject" className="form-label">
           Subject:
         </label>
         <select
-          className="form-select mb-3"
+          className="form-select"
           id="subject"
           value={selectedSubject.name || ""}
           onChange={(e) => {
             const foundSubject = subjects.find(
-              (sub) => sub.name == e.target.value
+              (sub) => sub.name === e.target.value
             );
             handleSubjectChange(foundSubject);
           }}
           disabled={!selectedSemester}
         >
           <option value="" disabled>
-            Select Subject
+            {loadingSubjects ? "Fetching..." : "Select Subject"}
           </option>
-          {subjects.map((subject, index) => (
-            <option key={index} value={subject.name}>
+          {subjects.map((subject) => (
+            <option key={subject.id} value={subject.name}>
               {subject.name}
             </option>
           ))}
         </select>
+      </div>
 
-        {selectedSubject && (
-          <>
-            <div className="form-label">Modules:</div>
-            {modules.map((module, index) => (
-              <div className="form-check" key={index}>
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  value={module.module_name}
-                  checked={selectedModules.includes(module)}
-                  onChange={() => handleModuleChange(module)}
-                  id={`module-${index}`}
-                />
-                <label
-                  className="form-check-label w-100 text-truncate"
-                  htmlFor={`module-${index}`}
-                >
-                  {module.module_name}
-                </label>
-              </div>
-            ))}
-            <ToggleCheckBtn
-              modules={modules}
-              isAllChecked={isAllChecked}
-              setSelectedModules={setSelectedModules}
-              setIsAllChecked={setIsAllChecked}
-            />
-          </>
-        )}
+      {selectedSubject && (
+        <>
+          <div className="form-label">Modules:</div>
+          <div className="modules-list">
+            {!loadingModules
+              ? modules.map((module, index) => (
+                  <div className="form-check" key={index}>
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      value={module.module_name}
+                      checked={selectedModules.includes(module)}
+                      onChange={() => handleModuleChange(module)}
+                      id={`module-${index}`}
+                    />
+                    <label
+                      className="form-check-label w-100 text-truncate"
+                      htmlFor={`module-${index}`}
+                    >
+                      {module.module_name}
+                    </label>
+                  </div>
+                ))
+              : [...Array(6)].map((_, index) => (
+                  <div className="form-check placeholder-glow" key={index}>
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      checked={false}
+                      disabled
+                    />
+                    <label className="form-check-label placeholder col-12 rounded" />
+                  </div>
+                ))}
+          </div>
+          <ToggleCheckBtn
+            modules={modules}
+            isAllChecked={isAllChecked}
+            setSelectedModules={setSelectedModules}
+            setIsAllChecked={setIsAllChecked}
+            loadingModules={loadingModules}
+          />
+        </>
+      )}
+
+      <div className="mt-3">
+        <label htmlFor="inputGroupFile01" className="form-label">
+          Upload Notes (PDF):
+        </label>
         <input
           type="file"
           accept=".pdf"
-          className="form-control mt-2"
+          className="form-control"
           id="inputGroupFile01"
           onChange={(e) => setFile(e.target.files[0])}
         />
-        <label className="form-label mt-3" htmlFor="professorNotes">
+      </div>
+
+      <div className="mt-3">
+        <label className="form-label" htmlFor="professorNotes">
           Professor Notes:
         </label>
         <textarea
-          className="form-control mb-3"
+          className="form-control"
           id="professorNotes"
           rows="3"
           value={professorNotes}
           onChange={(e) => setProfessorNotes(e.target.value)}
           placeholder="Add your notes here (optional)"
         />
-        <GenerateQuizBtn
-          getResult={getResult}
-          loading={loading}
-          selectedSubject={selectedSubject}
-          selectedModules={selectedModules}
-        />
-        <div className="btn-group mt-2">
+      </div>
+
+      <GenerateQuizBtn
+        getResult={getResult}
+        loading={loading}
+        selectedSubject={selectedSubject}
+        selectedModules={selectedModules}
+        className="mt-3 w-100"
+      />
+      <div className="btn-group-vertical w-100" role="group">
+        <div className="btn-group d-flex mt-4">
           {user?.isAdmin && (
-            <div
-              className="btn btn-outline-dark"
+            <button
+              className="btn btn-outline-dark w-100"
               onClick={() => setShowCreateNewQuiz((prev) => !prev)}
             >
-              {showCreateNewQuiz ? "Show Stats" : "Create Quiz "}
-            </div>
+              {showCreateNewQuiz ? "Show Stats" : "Create Quiz"}
+            </button>
           )}
-          <Link className="btn btn-outline-dark" href="/quizzes/take-quiz">
+          <Link
+            href="/quizzes/take-quiz"
+            className="btn btn-outline-dark w-100"
+          >
             Take Quiz
           </Link>
         </div>
-        <div
-          className="btn btn-outline-dark"
+
+        <button
+          className="btn btn-outline-dark rounded-top-0"
           onClick={() => setShowTopicInput(true)}
         >
           Create Your Own!
-        </div>
+        </button>
       </div>
     </div>
   );

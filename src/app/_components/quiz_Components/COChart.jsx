@@ -60,6 +60,7 @@ const COChart = ({ questions }) => {
     <>
       <h5>CO Distribution</h5>
       <canvas ref={chartRef} />
+      <div className="mb-4" />
     </>
   );
 };

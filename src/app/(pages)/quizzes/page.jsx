@@ -33,9 +33,9 @@ const shuffleArray = (array) => {
 };
 
 export default function Home() {
-  const [semesters, setSemesters] = useState([]); // To store the semesters
   const [selectedSemester, setSelectedSemester] = useState(""); // Selected semester
   const [subjects, setSubjects] = useState([]); // To store the subjects of the selected semester
+  const [semesters, setSemesters] = useState([]); // To store the semesters
   const [selectedSubject, setSelectedSubject] = useState(""); // Selected subject
   const [modules, setModules] = useState([]); // Modules of the selected subject
   const [selectedModules, setSelectedModules] = useState([]); // Selected modules
@@ -54,7 +54,8 @@ export default function Home() {
   const [showTopicInput, setShowTopicInput] = useState(false);
   const [customTopics, setCustomTopics] = useState("");
   const [loadingCustomTopics, setLoadingCustomTopics] = useState(false);
-
+  const [loadingSubjects, setLoadingSubjects] = useState(false);
+  const [loadingModules, setLoadingModules] = useState(false);
   const fetchQuizStats = useCallback(async () => {
     try {
       const { data, error } = await supabase.from("quiz_data").select("*");
@@ -114,6 +115,7 @@ export default function Home() {
 
   const handleSemesterChange = async (semester) => {
     setSelectedSemester(semester);
+    setLoadingSubjects(true);
     try {
       const { data, error } = await supabase
         .from("courses")
@@ -136,10 +138,12 @@ export default function Home() {
     setModules([]); // Clear modules
     setSelectedModules([]); // Clear selected modules
     setIsAllChecked(false); // Reset check/uncheck state
+    setLoadingSubjects(false);
   };
 
   const handleSubjectChange = async (subject) => {
     setSelectedSubject(subject);
+    setLoadingModules(true);
     try {
       const { data, error } = await supabase
         .from("modules")
@@ -153,6 +157,7 @@ export default function Home() {
     }
     setSelectedModules([]); // Clear selected modules
     setIsAllChecked(false); // Reset "Check All" state
+    setLoadingModules(false);
   };
 
   const handlePDFSubmit = useCallback(async () => {
@@ -418,65 +423,75 @@ export default function Home() {
     user,
     showCreateNewQuiz,
     setShowTopicInput,
+    loadingSubjects,
+    loadingModules,
   };
 
   return (
-    <div className="container-fluid mb-5 row mt-4 ">
-      <div className="col-md-4 col-lg-3">
-        <div className="card shadow-sm p-4">
-          {questions?.length > 0 && <COChart questions={questions} />}
-          <QuizConfig {...quizConfigProps} />
-          {quizStats && (
-            <Suspense fallback={<>Loading Quiz Stats...</>}>
-              <QuizStats quizStats={quizStats} />
-            </Suspense>
-          )}
-          {showTopicInput && (
-            <CustomTopicInputModal
-              setShowTopicInput={setShowTopicInput}
-              customTopics={customTopics}
-              setCustomTopics={setCustomTopics}
-              loadingCustomTopics={loadingCustomTopics}
-              handleGenerateFromTopic={handleGenerateFromTopic}
-            />
-          )}
-        </div>
-      </div>
+    <div className="container-fluid py-4">
+      <div className="row g-4">
+        {/* Left Panel: Quiz Configuration */}
+        <div className="col-lg-3">
+          <div className="card shadow-sm p-3">
+            {questions.length > 0 && <COChart questions={questions} />}
+            <QuizConfig {...quizConfigProps} />
 
-      <div className="col-md-8 col-lg-9">
-        <div className="card shadow-sm p-4">
-          <Suspense fallback={<Loader />}>
-            {!questions.length ? (
-              showCreateNewQuiz ? (
-                <CreateQuiz />
-              ) : !loading ? (
-                <QuizChart quizStats={quizStats} />
-              ) : (
-                <LoaderForQuestions />
-              )
-            ) : showResults ? (
-              <Results
-                score={score}
-                questions={questions}
-                userAnswers={userAnswers}
+            {/* Show quiz statistics if available */}
+            {quizStats && (
+              <Suspense fallback={<span>Loading Quiz Stats...</span>}>
+                <QuizStats quizStats={quizStats} />
+              </Suspense>
+            )}
+
+            {/* Modal for custom topic input */}
+            {showTopicInput && (
+              <CustomTopicInputModal
+                setShowTopicInput={setShowTopicInput}
+                customTopics={customTopics}
+                setCustomTopics={setCustomTopics}
+                loadingCustomTopics={loadingCustomTopics}
+                handleGenerateFromTopic={handleGenerateFromTopic}
               />
-            ) : (
-              <>
-                <ProgressBar
-                  currentQuestionIndex={currentQuestionIndex}
-                  questions={questions}
-                />
-                <ShowQuestions
-                  currentQuestionIndex={currentQuestionIndex}
-                  setCurrentQuestionIndex={setCurrentQuestionIndex}
-                  handleSubmit={handleSubmit}
+            )}
+          </div>
+        </div>
+
+        {/* Right Panel: Quiz Display */}
+        <div className="col-lg-9">
+          <div className="card shadow-sm p-4">
+            <Suspense fallback={<Loader />}>
+              {!questions.length ? (
+                showCreateNewQuiz ? (
+                  <CreateQuiz />
+                ) : !loading ? (
+                  <QuizChart quizStats={quizStats} />
+                ) : (
+                  <LoaderForQuestions />
+                )
+              ) : showResults ? (
+                <Results
+                  score={score}
                   questions={questions}
                   userAnswers={userAnswers}
-                  setUserAnswers={setUserAnswers}
                 />
-              </>
-            )}
-          </Suspense>
+              ) : (
+                <>
+                  <ProgressBar
+                    currentQuestionIndex={currentQuestionIndex}
+                    questions={questions}
+                  />
+                  <ShowQuestions
+                    currentQuestionIndex={currentQuestionIndex}
+                    setCurrentQuestionIndex={setCurrentQuestionIndex}
+                    handleSubmit={handleSubmit}
+                    questions={questions}
+                    userAnswers={userAnswers}
+                    setUserAnswers={setUserAnswers}
+                  />
+                </>
+              )}
+            </Suspense>
+          </div>
         </div>
       </div>
     </div>
