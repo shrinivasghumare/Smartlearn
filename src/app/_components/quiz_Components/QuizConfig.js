@@ -1,4 +1,5 @@
-import { ToggleCheckBtn } from "./Buttons";
+import { GenerateQuizBtn, ToggleCheckBtn } from "./Buttons";
+import Link from "next/link";
 export default function QuizConfig({
   semesters,
   subjects,
@@ -14,6 +15,11 @@ export default function QuizConfig({
   setFile,
   professorNotes,
   setProfessorNotes,
+  getResult,
+  loading,
+  user,
+  showCreateNewQuiz,
+  setShowTopicInput,
 }) {
   const handleModuleChange = (module) => {
     const isSelected = selectedModules.includes(module);
@@ -27,7 +33,7 @@ export default function QuizConfig({
     <div>
       <h4 className="text-center mt-3">Configure Quiz</h4>
       <hr />
-      <div>
+      <div className="d-flex flex-column">
         <label htmlFor="semester" className="form-label">
           Semester:
         </label>
@@ -119,6 +125,31 @@ export default function QuizConfig({
           onChange={(e) => setProfessorNotes(e.target.value)}
           placeholder="Add your notes here (optional)"
         />
+        <GenerateQuizBtn
+          getResult={getResult}
+          loading={loading}
+          selectedSubject={selectedSubject}
+          selectedModules={selectedModules}
+        />
+        <div className="btn-group mt-2">
+          {user?.isAdmin && (
+            <div
+              className="btn btn-outline-dark"
+              onClick={() => setShowCreateNewQuiz((prev) => !prev)}
+            >
+              {showCreateNewQuiz ? "Show Stats" : "Create Quiz "}
+            </div>
+          )}
+          <Link className="btn btn-outline-dark" href="/quizzes/take-quiz">
+            Take Quiz
+          </Link>
+        </div>
+        <div
+          className="btn btn-outline-dark"
+          onClick={() => setShowTopicInput(true)}
+        >
+          Create Your Own!
+        </div>
       </div>
     </div>
   );

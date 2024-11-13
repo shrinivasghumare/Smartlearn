@@ -11,10 +11,11 @@ import {
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { supabase } from "@lib/supabaseClient";
 import LayoutContext from "@context/LayoutContext";
-import { GenerateQuizBtn } from "@quizComponents/Buttons";
-import Link from "next/link";
 import CreateQuiz from "@/app/_components/quiz_Components/CreateQuiz";
 import COChart from "@/app/_components/quiz_Components/COChart";
+import LoaderForQuestions from "@/app/_components/quiz_Components/LoaderForQuestions";
+import ProgressBar from "@/app/_components/quiz_Components/ProgressBar";
+import CustomTopicInputModal from "@/app/_components/quiz_Components/CustomTopicInputModal";
 const ShowQuestions = lazy(() => import("@quizComponents/ShowQuestions"));
 const Results = lazy(() => import("@quizComponents/Results"));
 const QuizConfig = lazy(() => import("@quizComponents/QuizConfig"));
@@ -238,6 +239,7 @@ export default function Home() {
       "CO": "CO1" | "CO2" | "CO3" | "CO4" | "CO5" | "CO6" // Select the relevant course outcome number
     }
   ]
+    Make sure that there is atleast one question from every CO.
   Modules to base questions on: ${selectedModules
     .map((mod) => mod.module_name)
     .join(", ")}
@@ -411,6 +413,11 @@ export default function Home() {
     professorNotes,
     setIsAllChecked,
     setSelectedModules,
+    getResult,
+    loading,
+    user,
+    showCreateNewQuiz,
+    setShowTopicInput,
   };
 
   return (
@@ -419,81 +426,19 @@ export default function Home() {
         <div className="card shadow-sm p-4">
           {questions?.length > 0 && <COChart questions={questions} />}
           <QuizConfig {...quizConfigProps} />
-          <GenerateQuizBtn
-            getResult={getResult}
-            loading={loading}
-            selectedSubject={selectedSubject}
-            selectedModules={selectedModules}
-          />
-          <div className="btn-group mt-2">
-            {user?.isAdmin && (
-              <div
-                className="btn btn-outline-dark"
-                onClick={() => setShowCreateNewQuiz((prev) => !prev)}
-              >
-                {showCreateNewQuiz ? "Show Stats" : "Create Quiz "}
-              </div>
-            )}
-            <Link className="btn btn-outline-dark" href="/quizzes/take-quiz">
-              Take Quiz
-            </Link>
-          </div>
-          <div
-            className="btn btn-outline-dark"
-            onClick={() => setShowTopicInput(true)}
-          >
-            Generate from your own topic
-          </div>
           {quizStats && (
             <Suspense fallback={<>Loading Quiz Stats...</>}>
               <QuizStats quizStats={quizStats} />
             </Suspense>
           )}
           {showTopicInput && (
-            <div className="modal show" style={{ display: "block" }}>
-              <div className="modal-dialog">
-                <div className="modal-content">
-                  <div className="modal-header">
-                    <h5 className="modal-title">
-                      Enter Topics (comma separated)
-                    </h5>
-                    <button
-                      type="button"
-                      className="btn-close"
-                      onClick={() => setShowTopicInput(false)}
-                    />
-                  </div>
-                  <div className="modal-body">
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={customTopics}
-                      onChange={(e) => setCustomTopics(e.target.value)}
-                      placeholder="e.g., Quantum Physics, Thermodynamics"
-                    />
-                  </div>
-                  <div className="modal-footer">
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      onClick={() => setShowTopicInput(false)}
-                    >
-                      Close
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-primary"
-                      disabled={!customTopics || loadingCustomTopics}
-                      onClick={handleGenerateFromTopic}
-                    >
-                      {loadingCustomTopics
-                        ? "Loading..."
-                        : "Generate Questions"}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <CustomTopicInputModal
+              setShowTopicInput={setShowTopicInput}
+              customTopics={customTopics}
+              setCustomTopics={setCustomTopics}
+              loadingCustomTopics={loadingCustomTopics}
+              handleGenerateFromTopic={handleGenerateFromTopic}
+            />
           )}
         </div>
       </div>
@@ -504,8 +449,10 @@ export default function Home() {
             {!questions.length ? (
               showCreateNewQuiz ? (
                 <CreateQuiz />
-              ) : (
+              ) : !loading ? (
                 <QuizChart quizStats={quizStats} />
+              ) : (
+                <LoaderForQuestions />
               )
             ) : showResults ? (
               <Results
@@ -514,14 +461,20 @@ export default function Home() {
                 userAnswers={userAnswers}
               />
             ) : (
-              <ShowQuestions
-                currentQuestionIndex={currentQuestionIndex}
-                setCurrentQuestionIndex={setCurrentQuestionIndex}
-                handleSubmit={handleSubmit}
-                questions={questions}
-                userAnswers={userAnswers}
-                setUserAnswers={setUserAnswers}
-              />
+              <>
+                <ProgressBar
+                  currentQuestionIndex={currentQuestionIndex}
+                  questions={questions}
+                />
+                <ShowQuestions
+                  currentQuestionIndex={currentQuestionIndex}
+                  setCurrentQuestionIndex={setCurrentQuestionIndex}
+                  handleSubmit={handleSubmit}
+                  questions={questions}
+                  userAnswers={userAnswers}
+                  setUserAnswers={setUserAnswers}
+                />
+              </>
             )}
           </Suspense>
         </div>
