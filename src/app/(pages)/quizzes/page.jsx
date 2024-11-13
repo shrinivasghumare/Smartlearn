@@ -258,6 +258,7 @@ export default function Home() {
   }
   PDF content summary: ${pdfSummary}
   Number of questions to generate: ${NumberOfQuestions}
+  Please provide the output strictly in JSON format without any markdown, text, or extra characters. Do not include code blocks or escape characters.
 `;
 
     // console.log(prompt);
@@ -267,15 +268,14 @@ export default function Home() {
       const genAI = new GoogleGenerativeAI(
         process.env.NEXT_PUBLIC_GEMINI_API_KEY
       );
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = genAI.getGenerativeModel({
+        model: "gemini-1.5-flash",
+        generation_config: {
+          response_mime_type: "application/json",
+        },
+      });
       const result = await model.generateContent(prompt);
-      const rawText = result.response.text();
-      const cleanedText = rawText
-        .replace(/```json\n/g, "")
-        .replace(/\\n/g, "")
-        .replace(/```/g, "");
-
-      const parsedData = JSON.parse(cleanedText);
+      const parsedData = JSON.parse(result.response.text());
       // console.log(parsedData);
       const shuffledQuestions = shuffleArray(parsedData);
 
