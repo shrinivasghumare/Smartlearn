@@ -35,14 +35,14 @@ const CustomTopicInputModal = ({
           <div className="modal-footer">
             <button
               type="button"
-              className="btn btn-secondary"
+              className="btn btn-outline-dark"
               onClick={() => setShowTopicInput(false)}
             >
               Close
             </button>
             <button
               type="button"
-              className="btn btn-primary"
+              className="btn btn-dark"
               disabled={!customTopics || loadingCustomTopics}
               onClick={handleGenerateFromTopic}
             >
