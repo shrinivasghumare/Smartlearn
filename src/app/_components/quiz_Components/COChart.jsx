@@ -8,7 +8,7 @@ const COChart = ({ questions }) => {
     acc[co] = (acc[co] || 0) + 1;
     return acc;
   }, {});
-  const labels = Object.keys(coCounts).sort();
+  const labels = Object.keys(coCounts);
   const data = Object.values(coCounts);
   useEffect(() => {
     const ctx = chartRef.current.getContext("2d");
