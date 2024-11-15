@@ -22,6 +22,7 @@ export default function QuizConfig({
   setShowTopicInput,
   loadingSubjects,
   loadingModules,
+  setShowCreateNewQuiz,
 }) {
   const handleModuleChange = (module) => {
     const isSelected = selectedModules.includes(module);

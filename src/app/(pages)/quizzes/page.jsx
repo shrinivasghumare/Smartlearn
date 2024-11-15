@@ -425,6 +425,7 @@ export default function Home() {
     setShowTopicInput,
     loadingSubjects,
     loadingModules,
+    setShowCreateNewQuiz,
   };
 
   return (
