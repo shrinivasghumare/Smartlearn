@@ -16,31 +16,41 @@ export default function ClassroomDetails({ params }) {
   const [loading, setLoading] = useState(true);
   const { user, router } = useContext(LayoutContext);
   const [assignments, setAssignments] = useState(null);
-
+  const [studentSubmissions, setStudentSubmissions] = useState({});
   const fetchAssignments = useCallback(async () => {
+    // fetching all the assignments
     const { data, error } = await supabase
       .from("assignments")
       .select("*")
       .eq("classroom_id", classroomId)
       .order("created_at", { ascending: false });
+    let countOfAssignments = data?.length;
     if (error) console.log(error);
 
     if (user && data) {
       // Check if the user is admin to fetch submission counts for each assignment
       if (user?.isAdmin) {
+        const submissions = {};
         const assignmentData = await Promise.all(
           data.map(async (assignment) => {
-            const {
-              count,
-              error: countError,
-            } = await supabase
+            const { data, error } = await supabase
               .from("student_submissions")
               .select("*", { count: "exact" })
               .eq("assignment_id", assignment.id);
-            if (countError) console.error(countError);
-            return { ...assignment, submissionCount: count || 0 };
+            if (error) console.error(error);
+            const submittedBy = data.map((submission) => submission.student_id);
+            submittedBy.forEach((studentId) => {
+              if (submissions[studentId]) submissions[studentId]++;
+              else submissions[studentId] = 1;
+            });
+            return {
+              ...assignment,
+              submissionCount: data.length || 0,
+              submittedBy: submittedBy,
+            };
           })
         );
+        setStudentSubmissions(submissions);
         setAssignments(assignmentData);
       } else {
         // If the user is a student, check their grade for each assignment
@@ -239,13 +249,41 @@ export default function ClassroomDetails({ params }) {
               <h3>Class Members</h3>
               {members.length > 0 ? (
                 <ul className="list-group">
-                  {members.map((member, idx) => (
-                    <li key={idx} className="list-group-item">
-                      <strong>
-                        {member?.username} - {member?.roll_no}
-                      </strong>
-                    </li>
-                  ))}
+                  {members.map((member, idx) => {
+                    const progress = Math.round(
+                      (100 * studentSubmissions[member?.roll_no?.toString()]) /
+                        assignments?.length
+                    );
+                    return (
+                      <li
+                        key={idx}
+                        className="list-group-item d-flex align-items-center"
+                      >
+                        <strong className="w-100">
+                          {member?.username} - {member?.roll_no}
+                        </strong>
+                        {user?.isAdmin && (
+                          <div
+                            className="progress w-100"
+                            role="progressbar"
+                            style={{ height: "15px" }}
+                          >
+                            <div
+                              className="progress-bar"
+                              style={{
+                                width: `${progress}%`,
+                              }}
+                            >
+                              {!isNaN(progress) &&
+                                studentSubmissions[member?.roll_no] +
+                                  "/" +
+                                  assignments.length}
+                            </div>
+                          </div>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
               ) : (
                 <p className="text-muted">
