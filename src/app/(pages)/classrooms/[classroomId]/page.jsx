@@ -3,11 +3,10 @@ import { useEffect, useState, useContext, useCallback } from "react";
 import { supabase } from "@/app/_lib/supabaseClient";
 import AnnouncementForm from "@/app/_components/classroom_components/AnnouncementForm";
 import LayoutContext from "@/app/context/LayoutContext";
-import Link from "next/link";
-import {
-  FileIcon,
-  LeaveIcon,
-} from "@/app/_components/classroom_components/icons";
+import Announcements from "@/app/_components/classroom_components/Announcements";
+import AssignmentList from "@/app/_components/classroom_components/AssignmentList";
+import ClassMembers from "@/app/_components/classroom_components/ClassMembers";
+import { LeaveIcon } from "@/app/_components/classroom_components/icons";
 export default function ClassroomDetails({ params }) {
   const { classroomId } = params;
   const [classroom, setClassroom] = useState(null);
@@ -17,6 +16,7 @@ export default function ClassroomDetails({ params }) {
   const { user, router } = useContext(LayoutContext);
   const [assignments, setAssignments] = useState(null);
   const [studentSubmissions, setStudentSubmissions] = useState({});
+  
   const fetchAssignments = useCallback(async () => {
     // fetching all the assignments
     const { data, error } = await supabase
@@ -155,7 +155,7 @@ export default function ClassroomDetails({ params }) {
       {classroom && (
         <>
           <div className="d-flex justify-content-between align-items-center mb-4">
-            <h1 className="display-5">{classroom.name}</h1>
+            <h1 className="display-5">{classroom?.name}</h1>
             <button
               className="btn btn-outline-danger d-flex align-items-center"
               onClick={leaveClassroom}
@@ -173,174 +173,27 @@ export default function ClassroomDetails({ params }) {
                   onAddAnnouncement={fetchAnnouncements}
                 />
               )}
-              <div className="announcements-list mt-4">
-                <h3 className="mb-3">Announcements</h3>
-                {loading ? (
-                  <div className="text-center my-3">
-                    <div className="spinner-border" role="status">
-                      <span className="visually-hidden">Loading...</span>
-                    </div>
-                  </div>
-                ) : announcements.length > 0 ? (
-                  announcements.map((announcement) => (
-                    <div
-                      key={announcement.id}
-                      className="card mb-3"
-                      onMouseEnter={(e) => {
-                        const deleteIcon =
-                          e.currentTarget.querySelector(".delete-icon");
-                        if (deleteIcon) deleteIcon.style.opacity = "1";
-                      }}
-                      onMouseLeave={(e) => {
-                        const deleteIcon =
-                          e.currentTarget.querySelector(".delete-icon");
-                        if (deleteIcon) deleteIcon.style.opacity = "0";
-                      }}
-                    >
-                      <div className="card-body position-relative">
-                        {user?.isAdmin && (
-                          <span
-                            className="delete-icon position-absolute top-0 end-0 m-2 text-danger fs-5"
-                            style={{
-                              cursor: "pointer",
-                              opacity: "0",
-                              transition: "opacity 0.3s ease",
-                            }}
-                            onClick={() => deleteAnnouncement(announcement.id)}
-                          >
-                            &times;
-                          </span>
-                        )}
-                        <p className="card-text mb-2 text-dark">
-                          {announcement.content}
-                        </p>
-                        <div className="d-flex justify-content-between">
-                          {announcement.file_url && (
-                            <a
-                              href={
-                                supabase.storage
-                                  .from("materials")
-                                  .getPublicUrl(announcement.file_url).data
-                                  .publicUrl
-                              }
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-primary text-decoration-none d-flex align-items-center"
-                            >
-                              <FileIcon />
-                              View Attachment
-                            </a>
-                          )}
-
-                          <small className="text-muted d-block mb-2">
-                            {new Date(announcement.created_at).toGMTString()}
-                          </small>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-muted">No announcements yet.</p>
-                )}
-              </div>
+              <Announcements
+                loading={loading}
+                user={user}
+                deleteAnnouncement={deleteAnnouncement}
+                announcements={announcements}
+              />
             </div>
 
-            <div className="col-lg-4">
-              <h3>Class Members</h3>
-              {members.length > 0 ? (
-                <ul className="list-group">
-                  {members.map((member, idx) => {
-                    const progress = Math.round(
-                      (100 * studentSubmissions[member?.roll_no?.toString()]) /
-                        assignments?.length
-                    );
-                    const creator = member.roll_no == classroom.created_by;
-                    return (
-                      <li
-                        key={idx}
-                        className="list-group-item d-flex align-items-center"
-                      >
-                        <strong className="w-100">
-                          {member?.username} - {member?.roll_no}
-                        </strong>
-                        {creator && <div className="text-muted">Creator</div>}
-                        {user?.isAdmin && !creator && (
-                          <div
-                            className="progress w-100"
-                            role="progressbar"
-                            style={{ height: "15px" }}
-                          >
-                            <div
-                              className="progress-bar"
-                              style={{
-                                width: `${progress}%`,
-                              }}
-                            >
-                              {!isNaN(progress) &&
-                                studentSubmissions[member?.roll_no] +
-                                  "/" +
-                                  assignments.length}
-                            </div>
-                          </div>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              ) : (
-                <p className="text-muted">
-                  No members have joined this classroom yet.
-                </p>
-              )}
-            </div>
+            <ClassMembers
+              members={members}
+              assignments={assignments}
+              studentSubmissions={studentSubmissions}
+              classroom={classroom}
+              user={user}
+            />
 
-            <div className="assignments-list mt-4">
-              <h3 className="mb-3">Assignments</h3>
-              {assignments?.length > 0 ? (
-                assignments.map((assignment) => (
-                  <div key={assignment.id} className="card mb-3">
-                    <div className="card-body">
-                      <Link
-                        href={`/classrooms/${classroomId}/assignments/${assignment.id}`}
-                        className="text-dark text-decoration-none"
-                      >
-                        <h5 className="card-title">{assignment.content}</h5>
-                      </Link>
-                      <p>Total Score: {assignment.total_score}</p>
-                      {user?.isAdmin ? (
-                        <p>
-                          Submissions: {assignment.submissionCount} students
-                        </p>
-                      ) : (
-                        <p>
-                          {assignment.grade === null
-                            ? "Not graded!"
-                            : assignment.grade === undefined
-                            ? "No Submissions done yet!"
-                            : `Grade: ${assignment.grade} / ${assignment.total_score}`}
-                        </p>
-                      )}
-                      {assignment.file_url && (
-                        <a
-                          href={
-                            supabase.storage
-                              .from(`assignments/${classroom.id}`)
-                              .getPublicUrl(assignment.file_url).data.publicUrl
-                          }
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary text-decoration-none d-flex align-items-center"
-                        >
-                          <FileIcon /> View Attachment
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-muted">No assignments yet.</p>
-              )}
-            </div>
+            <AssignmentList
+              assignments={assignments}
+              classroom={classroom}
+              user={user}
+            />
           </div>
         </>
       )}
