@@ -254,6 +254,7 @@ export default function ClassroomDetails({ params }) {
                       (100 * studentSubmissions[member?.roll_no?.toString()]) /
                         assignments?.length
                     );
+                    const creator = member.roll_no == classroom.created_by;
                     return (
                       <li
                         key={idx}
@@ -262,7 +263,8 @@ export default function ClassroomDetails({ params }) {
                         <strong className="w-100">
                           {member?.username} - {member?.roll_no}
                         </strong>
-                        {user?.isAdmin && (
+                        {creator && <div className="text-muted">Creator</div>}
+                        {user?.isAdmin && !creator && (
                           <div
                             className="progress w-100"
                             role="progressbar"
