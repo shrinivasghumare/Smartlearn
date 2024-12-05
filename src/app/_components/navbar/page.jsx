@@ -2,9 +2,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useContext } from "react";
-import LayoutContext from "../../context/LayoutContext";
+import LayoutContext from "@context/LayoutContext";
 import Image from "next/image";
-import logo from "../../assets/vidyagram_logo.png";
+import logo from "@assets/vidyagram_logo.png";
 import "./styles.css";
 const navLinks = [
   { href: "/", text: "Home" },

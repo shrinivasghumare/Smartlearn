@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useContext } from "react";
-import LayoutContext from "../../../context/LayoutContext";
+import LayoutContext from "@context/LayoutContext";
 import { supabase } from "../../../_lib/supabaseClient";
 import "../../../globals.css";
 

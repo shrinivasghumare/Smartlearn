@@ -1,7 +1,7 @@
 import { memo } from "react";
 import Link from "next/link";
 import { supabase } from "@/app/_lib/supabaseClient";
-import { FileIcon } from "@/app/_components/classroom_components/icons";
+import { FileIcon } from "@classroomComponents/icons";
 const AssignmentList = ({ assignments, classroom, user }) => {
   return (
     <div className="assignments-list mt-4">

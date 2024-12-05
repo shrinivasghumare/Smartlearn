@@ -1,13 +1,13 @@
 "use client";
-import { useEffect, useState, useContext, useCallback } from "react";
+import { useEffect, useState, useContext, useCallback, memo } from "react";
 import { supabase } from "@/app/_lib/supabaseClient";
-import AnnouncementForm from "@/app/_components/classroom_components/AnnouncementForm";
 import LayoutContext from "@/app/context/LayoutContext";
-import Announcements from "@/app/_components/classroom_components/Announcements";
-import AssignmentList from "@/app/_components/classroom_components/AssignmentList";
-import ClassMembers from "@/app/_components/classroom_components/ClassMembers";
-import { LeaveIcon } from "@/app/_components/classroom_components/icons";
-export default function ClassroomDetails({ params }) {
+import AnnouncementForm from "@classroomComponents/AnnouncementForm";
+import Announcements from "@classroomComponents/Announcements";
+import AssignmentList from "@classroomComponents/AssignmentList";
+import ClassMembers from "@classroomComponents/ClassMembers";
+import { LeaveIcon } from "@classroomComponents/icons";
+const ClassroomDetails = ({ params }) => {
   const { classroomId } = params;
   const [classroom, setClassroom] = useState(null);
   const [announcements, setAnnouncements] = useState([]);
@@ -16,7 +16,7 @@ export default function ClassroomDetails({ params }) {
   const { user, router } = useContext(LayoutContext);
   const [assignments, setAssignments] = useState(null);
   const [studentSubmissions, setStudentSubmissions] = useState({});
-  
+
   const fetchAssignments = useCallback(async () => {
     // fetching all the assignments
     const { data, error } = await supabase
@@ -163,7 +163,7 @@ export default function ClassroomDetails({ params }) {
               <LeaveIcon /> Quit
             </button>
           </div>
-          <p className="lead">{classroom.description}</p>
+          <p className="lead">{classroom?.description}</p>
 
           <div className="row">
             <div className="col-lg-8">
@@ -199,4 +199,5 @@ export default function ClassroomDetails({ params }) {
       )}
     </div>
   );
-}
+};
+export default memo(ClassroomDetails);

@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { FileIcon } from "@/app/_components/classroom_components/icons";
+import { FileIcon } from "@classroomComponents/icons";
 import { supabase } from "@/app/_lib/supabaseClient";
 const Announcements = ({
   loading,
