@@ -1,4 +1,3 @@
-import { CheckIcon, WrongIcon } from "./Icons";
 export default function Results({ score, questions, userAnswers }) {
   return (
     <div>
@@ -59,9 +58,9 @@ export default function Results({ score, questions, userAnswers }) {
                 {option.toString()}{" "}
                 {userAnswers[index] === option ? (
                   option === question?.correct_answer ? (
-                    <CheckIcon />
+                    <i className="bi bi-check-circle-fill" />
                   ) : (
-                    <WrongIcon />
+                    <i className="bi bi-x-circle-fill" />
                   )
                 ) : (
                   ""

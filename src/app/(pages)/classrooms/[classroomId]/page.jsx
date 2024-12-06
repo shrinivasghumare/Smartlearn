@@ -9,7 +9,6 @@ import AssignmentList from "@classroomComponents/AssignmentList";
 import ClassMembers from "@classroomComponents/ClassMembers";
 import PollForm from "@classroomComponents/PollForm";
 import Polls from "@classroomComponents/Polls";
-import { LeaveIcon } from "@classroomComponents/icons";
 const ClassroomDetails = ({ params }) => {
   const { classroomId } = params;
   const [classroom, setClassroom] = useState(null);
@@ -181,7 +180,7 @@ const ClassroomDetails = ({ params }) => {
               className="btn btn-outline-danger d-flex align-items-center"
               onClick={leaveClassroom}
             >
-              <LeaveIcon /> Quit
+              <i class="bi bi-box-arrow-right" /> Quit
             </button>
           </div>
           <p className="lead">{classroom?.description}</p>

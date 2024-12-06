@@ -30,6 +30,7 @@ const CustomTopicInputModal = ({
               value={customTopics}
               onChange={(e) => setCustomTopics(e.target.value)}
               placeholder="e.g., Quantum Physics, Thermodynamics"
+              required
             />
           </div>
           <div className="modal-footer">
@@ -43,7 +44,7 @@ const CustomTopicInputModal = ({
             <button
               type="button"
               className="btn btn-dark"
-              disabled={!customTopics || loadingCustomTopics}
+              disabled={!customTopics.trim() || loadingCustomTopics}
               onClick={handleGenerateFromTopic}
             >
               {loadingCustomTopics ? "Loading..." : "Generate Questions"}

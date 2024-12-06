@@ -1,7 +1,6 @@
 import { memo } from "react";
 import Link from "next/link";
 import { supabase } from "@/app/_lib/supabaseClient";
-import { FileIcon } from "@classroomComponents/icons";
 const AssignmentList = ({ assignments, classroom, user }) => {
   return (
     <div className="assignments-list mt-4">
@@ -39,7 +38,7 @@ const AssignmentList = ({ assignments, classroom, user }) => {
                   rel="noopener noreferrer"
                   className="text-primary text-decoration-none d-flex align-items-center"
                 >
-                  <FileIcon /> View Attachment
+                  <i className="bi bi-file-earmark-richtext" /> View Attachment
                 </a>
               )}
             </div>

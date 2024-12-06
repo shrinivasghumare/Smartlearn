@@ -2,7 +2,7 @@
 import { useState, useEffect, useContext } from "react";
 import LayoutContext from "@context/LayoutContext";
 import { supabase } from "../../../_lib/supabaseClient";
-import "../../../globals.css";
+import "@/app/globals.css";
 
 export default function Module({ params }) {
   const { user } = useContext(LayoutContext);

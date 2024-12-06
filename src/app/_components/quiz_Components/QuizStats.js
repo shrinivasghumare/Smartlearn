@@ -1,4 +1,4 @@
-import React from "react";
+import {memo} from "react";
 const QuizStats = ({ quizStats }) => {
   return (
     <div className="card mt-3 p-3">
@@ -26,4 +26,4 @@ const QuizStats = ({ quizStats }) => {
     </div>
   );
 };
-export default React.memo(QuizStats);
+export default memo(QuizStats);

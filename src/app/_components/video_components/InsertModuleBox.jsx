@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { supabase } from "../../_lib/supabaseClient";
+import { supabase } from "@/app/_lib/supabaseClient";
 
 export default function InsertModuleBox({ modules, subject, setModules }) {
   const [newModuleName, setNewModuleName] = useState("");

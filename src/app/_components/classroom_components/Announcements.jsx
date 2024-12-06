@@ -1,5 +1,4 @@
 import { memo } from "react";
-import { FileIcon } from "@classroomComponents/icons";
 import { supabase } from "@/app/_lib/supabaseClient";
 const Announcements = ({
   loading,
@@ -57,7 +56,7 @@ const Announcements = ({
                     rel="noopener noreferrer"
                     className="text-primary text-decoration-none d-flex align-items-center"
                   >
-                    <FileIcon />
+                    <i className="bi bi-file-earmark-richtext" />
                     View Attachment
                   </a>
                 )}

@@ -1,4 +1,4 @@
-import { useState, useEffect, memo } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/app/_lib/supabaseClient";
 
 export default function Polls({ polls, user }) {

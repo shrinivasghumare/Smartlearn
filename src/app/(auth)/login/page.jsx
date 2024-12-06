@@ -1,9 +1,9 @@
 "use client";
 import { useState, useContext } from "react";
-import { supabase } from "../../_lib/supabaseClient";
-import LayoutContext from "../../context/LayoutContext";
+import { supabase } from "@/app/_lib/supabaseClient";
+import LayoutContext from "@context/LayoutContext";
 import "./styles.css";
-import "../../globals.css";
+import "@/app/globals.css";
 const Login = () => {
   const [roll_no, setRoll_no] = useState("");
   const [password, setPassword] = useState("");

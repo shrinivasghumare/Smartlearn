@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import "./styles.css";
-import "../../../globals.css";
+import "@/app/globals.css";
 import Link from "next/link";
 export default function VideoLayout({ children }) {
   const [navVisible, setNavVisible] = useState(false);
