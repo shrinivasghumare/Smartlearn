@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState, useContext, useCallback } from "react";
-import LayoutContext from "@/app/context/LayoutContext";
-import ClassroomCard from "@/app/_components/classroom_components/ClassroomCard";
-import ClassroomForm from "@/app/_components/classroom_components/ClassroomForm";
+import LayoutContext from "@context/LayoutContext";
+import ClassroomCard from "@classroomComponents/ClassroomCard";
+import ClassroomForm from "@classroomComponents/ClassroomForm";
 import { supabase } from "@/app/_lib/supabaseClient";
 import "./styles.css";
 

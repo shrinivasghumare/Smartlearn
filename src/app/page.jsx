@@ -1,6 +1,6 @@
 "use client";
 import { useContext } from "react";
-import LayoutContext from "./context/LayoutContext";
+import LayoutContext from "@context/LayoutContext";
 import "./globals.css";
 import Link from "next/link";
 export default function Home() {

@@ -2,7 +2,7 @@
 import Navbar from "./_components/navbar/page";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import LayoutContext from "./context/LayoutContext";
+import LayoutContext from "@context/LayoutContext";
 import Script from "next/script";
 const RootLayout = ({ children }) => {
   const [user, setUser] = useState();

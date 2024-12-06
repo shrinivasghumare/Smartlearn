@@ -1,3 +1,4 @@
+//classrooms/[classroomId]/page.jsx
 "use client";
 import { useEffect, useState, useContext, useCallback, memo } from "react";
 import { supabase } from "@/app/_lib/supabaseClient";
@@ -6,6 +7,8 @@ import AnnouncementForm from "@classroomComponents/AnnouncementForm";
 import Announcements from "@classroomComponents/Announcements";
 import AssignmentList from "@classroomComponents/AssignmentList";
 import ClassMembers from "@classroomComponents/ClassMembers";
+import PollForm from "@classroomComponents/PollForm";
+import Polls from "@classroomComponents/Polls";
 import { LeaveIcon } from "@classroomComponents/icons";
 const ClassroomDetails = ({ params }) => {
   const { classroomId } = params;
@@ -16,7 +19,9 @@ const ClassroomDetails = ({ params }) => {
   const { user, router } = useContext(LayoutContext);
   const [assignments, setAssignments] = useState(null);
   const [studentSubmissions, setStudentSubmissions] = useState({});
-
+  const [polls, setPolls] = useState([]);
+  const [showPollForm, setShowPollForm] = useState(false);
+  const [loadingPolls, setLoadingPolls] = useState(false);
   const fetchAssignments = useCallback(async () => {
     // fetching all the assignments
     const { data, error } = await supabase
@@ -24,7 +29,7 @@ const ClassroomDetails = ({ params }) => {
       .select("*")
       .eq("classroom_id", classroomId)
       .order("created_at", { ascending: false });
-    let countOfAssignments = data?.length;
+
     if (error) console.log(error);
 
     if (user && data) {
@@ -60,9 +65,8 @@ const ClassroomDetails = ({ params }) => {
               .from("student_submissions")
               .select("grade")
               .eq("assignment_id", assignment.id)
-              .eq("student_id", user?.roll_no)
-              .single(); // Single submission for a student
-            if (submissionError) console.error(submissionError);
+              .eq("student_id", user?.roll_no);
+            // if (submissionError) console.error(submissionError);
             return {
               ...assignment,
               grade: submission?.grade,
@@ -135,11 +139,27 @@ const ClassroomDetails = ({ params }) => {
     }
   };
 
+  const fetchPolls = useCallback(async () => {
+    setLoadingPolls(true);
+    const { data: pollsData } = await supabase
+      .from("polls")
+      .select("*, poll_votes(user_id,selected_option)")
+      .eq("classroom_id", classroomId);
+    setPolls(pollsData || []);
+    setLoadingPolls(false);
+  }, [classroomId]);
+
+  const handlePollCreated = (newPoll) => {
+    if (newPoll) setPolls((prev) => [newPoll, ...prev]);
+    setShowPollForm(false);
+  };
+
   useEffect(() => {
     if (classroomId) {
       fetchClassroom();
-      fetchAnnouncements();
       fetchMembers();
+      fetchPolls();
+      fetchAnnouncements();
       fetchAssignments();
     }
   }, [
@@ -148,6 +168,7 @@ const ClassroomDetails = ({ params }) => {
     fetchAnnouncements,
     fetchMembers,
     fetchAssignments,
+    fetchPolls,
   ]);
 
   return (
@@ -168,10 +189,27 @@ const ClassroomDetails = ({ params }) => {
           <div className="row">
             <div className="col-lg-8">
               {user?.isAdmin && (
-                <AnnouncementForm
-                  classroomId={classroomId}
-                  onAddAnnouncement={fetchAnnouncements}
-                />
+                <>
+                  <AnnouncementForm
+                    classroomId={classroomId}
+                    onAddAnnouncement={fetchAnnouncements}
+                  />
+                  {!showPollForm ? (
+                    <div className="mb-4">
+                      <button
+                        className="btn btn-dark"
+                        onClick={() => setShowPollForm(true)}
+                      >
+                        Create Poll
+                      </button>
+                    </div>
+                  ) : (
+                    <PollForm
+                      classroomId={classroomId}
+                      onPollCreated={handlePollCreated}
+                    />
+                  )}
+                </>
               )}
               <Announcements
                 loading={loading}
@@ -179,6 +217,15 @@ const ClassroomDetails = ({ params }) => {
                 deleteAnnouncement={deleteAnnouncement}
                 announcements={announcements}
               />
+              {loadingPolls ? (
+                <div className="text-center my-3">
+                  <div className="spinner-border" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+              ) : (
+                <Polls polls={polls} user={user} />
+              )}
             </div>
 
             <ClassMembers
