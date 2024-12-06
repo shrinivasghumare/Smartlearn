@@ -1,7 +1,7 @@
 import { useState, useEffect, memo } from "react";
 import { supabase } from "@/app/_lib/supabaseClient";
 
-const Polls = ({ polls, user }) => {
+export default function Polls({ polls, user }) {
   const [userVotes, setUserVotes] = useState({});
   const [selectedOption, setSelectedOption] = useState({});
   const [loadingPolls, setLoadingPolls] = useState({});
@@ -69,71 +69,67 @@ const Polls = ({ polls, user }) => {
       ))}
     </div>
   );
-};
+}
 
-const Poll = memo(
-  ({
-    poll,
-    userVotedOption,
-    isLoading,
-    handleVote,
-    setSelectedOption,
-    selectedOption,
-  }) => {
-    const hasVoted = !!userVotedOption;
+function Poll({
+  poll,
+  userVotedOption,
+  isLoading,
+  handleVote,
+  setSelectedOption,
+  selectedOption,
+}) {
+  const hasVoted = !!userVotedOption;
 
-    return (
-      <div className="poll mb-3 p-3 rounded shadow-sm bg-light">
-        <h5 className="">{poll.title}</h5>
-        <div className="mt-3">
-          {poll.options.map((option,index) => {
-            const inputId = `poll-${poll.id}-option-${index}`;
-            return (
-              <div key={option} className="form-check">
-                <input
-                  className="form-check-input"
-                  type="radio"
-                  id={inputId}
-                  name={`poll-${poll.id}`}
-                  value={option}
-                  onChange={(e) =>
-                    setSelectedOption((prev) => ({
-                      ...prev,
-                      [poll.id]: e.target.value,
-                    }))
-                  }
-                  disabled={hasVoted || isLoading}
-                  checked={
-                    hasVoted
-                      ? userVotedOption === option
-                      : selectedOption[poll.id] === option
-                  }
-                />
-                <label className="form-check-label" htmlFor={inputId}>
-                  {option}
-                </label>
-              </div>
-            );
-          })}
-        </div>
-        <div className="mt-4">
-          {!hasVoted ? (
-            <button
-              className="btn btn-outline-dark"
-              onClick={() => handleVote(poll.id)}
-              disabled={!selectedOption[poll.id] || isLoading}
-            >
-              {isLoading ? "Submitting..." : "Submit"}
-            </button>
-          ) : (
-            <p className="blockquote-footer mt-2">
-              You voted: <strong>{userVotedOption}</strong>
-            </p>
-          )}
-        </div>
+  return (
+    <div className="poll mb-3 p-3 rounded shadow-sm bg-light">
+      <h5 className="">{poll.title}</h5>
+      <div className="mt-3">
+        {poll.options.map((option, index) => {
+          const inputId = `poll-${poll.id}-option-${index}`;
+          return (
+            <div key={option} className="form-check">
+              <input
+                className="form-check-input"
+                type="radio"
+                id={inputId}
+                name={`poll-${poll.id}`}
+                value={option}
+                onChange={(e) =>
+                  setSelectedOption((prev) => ({
+                    ...prev,
+                    [poll.id]: e.target.value,
+                  }))
+                }
+                disabled={hasVoted || isLoading}
+                checked={
+                  hasVoted
+                    ? userVotedOption === option
+                    : selectedOption[poll.id] === option
+                }
+              />
+              <label className="form-check-label" htmlFor={inputId}>
+                {option}
+              </label>
+            </div>
+          );
+        })}
       </div>
-    );
-  }
-);
-
-export default memo(Polls);
+      <div className="mt-4">
+        {!hasVoted ? (
+          <button
+            className="btn btn-outline-dark"
+            onClick={() => handleVote(poll.id)}
+            disabled={!selectedOption[poll.id] || isLoading}
+          >
+            {isLoading ? "Submitting..." : "Submit"}
+          </button>
+        ) : (
+          <p className="blockquote-footer mt-2">
+            You voted: <strong>{userVotedOption}</strong>
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
