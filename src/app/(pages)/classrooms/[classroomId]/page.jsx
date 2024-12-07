@@ -180,7 +180,7 @@ const ClassroomDetails = ({ params }) => {
               className="btn btn-outline-danger d-flex align-items-center"
               onClick={leaveClassroom}
             >
-              <i class="bi bi-box-arrow-right" /> Quit
+              <i className="bi bi-box-arrow-right" /> Quit
             </button>
           </div>
           <p className="lead">{classroom?.description}</p>
