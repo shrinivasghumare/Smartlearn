@@ -8,7 +8,6 @@ export default function Home() {
   const cards = [
     { href: "/videos", text: "Videos" },
     { href: "/quizzes", text: "Quizzes" },
-    { href: "/notes", text: "Notes" },
     { href: "/classrooms", text: "Classroom" },
   ];
 

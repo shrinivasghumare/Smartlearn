@@ -10,7 +10,6 @@ const navLinks = [
   { href: "/", text: "Home" },
   { href: "/videos", text: "Videos" },
   { href: "/quizzes", text: "Quizzes" },
-  { href: "/notes", text: "Notes" },
   { href: "/classrooms", text: "Classroom" },
 ];
 const NavBar = () => {
