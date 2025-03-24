@@ -89,16 +89,16 @@ export default function ShowQuestions({
           </li>
         ))}
       </ul>
-      <div className="d-flex justify-content-between">
+      <div className="">
         <button
-          className="btn btn-dark"
+          className="btn btn-dark mx-2"
           onClick={() => {
             if (currentQuestionIndex > 0)
               setCurrentQuestionIndex(currentQuestionIndex - 1);
           }}
           disabled={currentQuestionIndex === 0}
         >
-          Previous
+          &larr;
         </button>
         {currentQuestionIndex === questions.length - 1 ? (
           <button className="btn btn-success" onClick={handleSubmit}>
@@ -112,7 +112,7 @@ export default function ShowQuestions({
                 setCurrentQuestionIndex(currentQuestionIndex + 1);
             }}
           >
-            Next
+            &rarr;
           </button>
         )}
       </div>
