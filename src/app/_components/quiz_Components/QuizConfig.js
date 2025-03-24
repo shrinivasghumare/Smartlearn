@@ -12,7 +12,7 @@ export default function QuizConfig({
   isAllChecked,
   setIsAllChecked,
   setSelectedModules,
-  setFile,
+  /* setFile,*/
   professorNotes,
   setProfessorNotes,
   getResult,
@@ -129,7 +129,8 @@ export default function QuizConfig({
         </>
       )}
 
-      <div className="mt-3">
+      {/* Upload pdf sections */}
+      {/* <div className="mt-3">
         <label htmlFor="inputGroupFile01" className="form-label">
           Upload Notes (PDF):
         </label>
@@ -140,7 +141,7 @@ export default function QuizConfig({
           id="inputGroupFile01"
           onChange={(e) => setFile(e.target.files[0])}
         />
-      </div>
+      </div> */}
 
       <div className="mt-3">
         <label className="form-label" htmlFor="professorNotes">
