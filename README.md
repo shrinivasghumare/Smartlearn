@@ -1,6 +1,6 @@
-# Vidyagram ✨
+# Smartlearn ✨
 
-Welcome to **Vidyagram**! This project is built using **Next.js** with support for modern web features like authentication, state management, and page-based routing. Below you'll find all the information you need to get started with this project.
+Welcome to **Smartlearn**! This project is built using **Next.js** with support for modern web features like authentication, state management, and page-based routing. Below you'll find all the information you need to get started with this project.
 
 ## Table of Contents
 
@@ -26,7 +26,7 @@ To run this project locally, follow these steps:
 2. **Navigate to the project folder:**
 
     ```bash
-    cd Vidyagram-main
+    cd Smartlearn-main
     ```
 
 3. **Install dependencies:**
@@ -54,7 +54,7 @@ To run this project locally, follow these steps:
 Here's a quick overview of the project structure, with key files and folders:
 
 ```bash
-Vidyagram/
+Smartlearn/
 ├── src/
 │   ├── app/
 │   │   ├── (auth)/        # Authentication-related components and pages
