@@ -42,7 +42,7 @@ const RootLayout = ({ children }) => {
             rel="stylesheet"
             href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css"
           />
-          <title>Vidyagram</title>
+          <title>Smartlearn</title>
         </head>
         <body>
           <Navbar />

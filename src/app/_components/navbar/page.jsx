@@ -25,7 +25,7 @@ const NavBar = () => {
             href={user ? "/" : "/login"}
           >
             <Image src={logo} width={50} alt="vidyagram" />
-            {`VidyaGram${(user && "-" + user?.roll_no) || ""}`}
+            {`Smartlearn${(user && "-" + user?.roll_no) || ""}`}
           </Link>
           {user && (
             <>
